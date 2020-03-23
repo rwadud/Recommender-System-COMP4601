@@ -14,6 +14,10 @@ public class Page implements Serializable, Cloneable{
 		this.pageid = id;
 	}
 	
+	public String getPageId() {
+		return pageid;
+	}
+	
 	public List<Review> getReviews() throws Exception {
 		return DatabaseManager.getInstance().getReviewsForMovie(pageid);
 	}

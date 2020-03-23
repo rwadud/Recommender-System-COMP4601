@@ -96,6 +96,17 @@ public class DatabaseManager {
 		return list;
 	}
 	
+	public synchronized List<Page> getPages(){
+		FindIterable<Document> result = pages.find();
+		List<Page> list = new ArrayList<>();
+		
+		JsonWriterSettings relaxed = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
+		for (Document doc : result) {
+			list.add(gson.fromJson(doc.toJson(relaxed), Page.class));
+		}   
+		return list;
+	}
+	
 	public synchronized User getUserById(String userid) throws Exception{
 		BasicDBObject query = new BasicDBObject("userid", userid);
 		Document doc = users.find(query).first();
@@ -116,6 +127,16 @@ public class DatabaseManager {
 		} else {
 			throw new Exception("Page not found");
 		}
+	}
+	
+	public synchronized List<Review> getReviews() throws Exception{
+		FindIterable<Document> result = reviews.find();
+		List<Review> list = new ArrayList<>();
+		JsonWriterSettings relaxed = JsonWriterSettings.builder().outputMode(JsonMode.RELAXED).build();
+		for (Document doc : result) {
+			list.add(gson.fromJson(doc.toJson(relaxed), Review.class));
+		}
+		return list;
 	}
 	
 	public synchronized Review getReview(String userid, String pageid) throws Exception{

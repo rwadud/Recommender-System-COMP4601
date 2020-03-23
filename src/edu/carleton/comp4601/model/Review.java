@@ -49,4 +49,10 @@ public class Review implements Serializable, Cloneable{
 	public String getUserId() {
 		return userid;
 	}
+	
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return userid+"-"+pageid;
+	}
 }

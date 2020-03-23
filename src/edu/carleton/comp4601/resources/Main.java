@@ -10,11 +10,11 @@ public class Main {
 	public static void main(String[] args) {
 
 		try {
-			DatabaseManager.getInstance().reset();
-			DataLoader.loadUserData();
-			DataLoader.loadPageData();
-			DataLoader.loadReviews();
-		} catch (IOException e) {
+			//DatabaseManager.getInstance().reset();
+			//DataLoader.loadUserData();
+			//DataLoader.loadPageData();
+			//DataLoader.loadReviews();
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
