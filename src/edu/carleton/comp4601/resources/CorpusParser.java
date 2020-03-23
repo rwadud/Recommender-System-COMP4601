@@ -118,7 +118,7 @@ public class CorpusParser {
 	 */
 	public void test() {
 		
-		String[] genre = {"action", "comedey", "drama", "horror", "romance", "adventure"};
+		String[] genre = {"action", "comedy", "drama", "horror", "romance", "adventure"};
 		
 		
 		System.out.println("**** TESTING: genre ****");
