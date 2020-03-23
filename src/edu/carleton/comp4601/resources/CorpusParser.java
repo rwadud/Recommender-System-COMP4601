@@ -174,7 +174,9 @@ public class CorpusParser {
 				STOP_WORDS.add(s.next());
 			}
 			s.close();
+			/*
 			log.info("Read in " + STOP_WORDS.size() + " stop words.");
+			*/
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -216,9 +218,11 @@ public class CorpusParser {
 					MASTER.remove(stopWord);
 				}
 				s.close();
+				/*
 				log.info(review.toString() + " processed. It contained " + noWords
 						+ " words (" + distinctWords + "). There are "
 						+ map.keySet().size() + " non-stop words.");
+						*/
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -241,7 +245,9 @@ public class CorpusParser {
 			TERMS.add(new Word(e.getKey(), e.getValue(), df));
 		}
 		Collections.sort(TERMS);
+		/*
 		log.info(TERMS.toString());
+		*/
 	}
 
 	/* 
