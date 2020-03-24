@@ -89,6 +89,10 @@ public class CorpusParser {
 		
 		try {
 			
+			// This is temporary code for testing purposes
+			// Will be done properly later
+			
+			//Page page = DatabaseManager.getInstance().getPageById("0767800117");
 			for (Page page : pages) {
 				List<Review> reviews = DatabaseManager.getInstance().getReviewsForMovie(page.getPageId());
 				
@@ -96,8 +100,7 @@ public class CorpusParser {
 				
 				String txt = "";
 				for (Review review : reviews) {
-					txt+=" "+review.getContent().toLowerCase();
-						
+					txt+=" "+review.getContent().toLowerCase().replace(",", "").replace(".", "");	
 				}
 				tmp.setContent(txt);
 				List<Review> rv = new ArrayList<Review>();
