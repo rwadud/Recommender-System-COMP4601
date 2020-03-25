@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.logging.Logger;
@@ -15,6 +16,7 @@ import org.jsoup.nodes.Document;
 import edu.carleton.comp4601.database.DatabaseManager;
 import edu.carleton.comp4601.model.Page;
 import edu.carleton.comp4601.model.Review;
+import edu.carleton.comp4601.utility.Utils;
 
 public class CorpusParser {
 	// The 5 files in the corpus
@@ -79,11 +81,22 @@ public class CorpusParser {
 		input();
 	}
 
+	
+	public static String getDominantCategory(Review review) {
+		List<Review> tmp = new ArrayList<Review>();
+		tmp.add(review);
+		CorpusParser parser = new CorpusParser(tmp);
+		return parser.getDominantCategory();
+	}
+	
 	/*
 	 * The main method allows the CorpusParser class to 
 	 * be run independently.
 	 */
 	public static void main(String[] args) {
+		/*
+		long start = System.currentTimeMillis();
+		
 		
 		List<Page> pages = DatabaseManager.getInstance().getPages();
 		
@@ -96,72 +109,79 @@ public class CorpusParser {
 			for (Page page : pages) {
 				List<Review> reviews = DatabaseManager.getInstance().getReviewsForMovie(page.getPageId());
 				
+					
+				
 				Review tmp = new Review(page.getPageId(),"movie", "", 5);
 				
 				String txt = "";
 				for (Review review : reviews) {
+					//List<Review> rv = new ArrayList<Review>();
+					//rv.add(review);
 					txt+=" "+review.getContent().toLowerCase().replace(",", "").replace(".", "");	
+					
+					
 				}
 				tmp.setContent(txt);
 				List<Review> rv = new ArrayList<Review>();
 				rv.add(tmp);
 				CorpusParser parser = new CorpusParser(rv);
-				parser.test();
+					
 			}
+			
+			long finish = System.currentTimeMillis();
+			
+			long timeElapsed = finish - start;
+			
+			System.out.println("Took "+ (timeElapsed/1000) + " seconds");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
+		*/
 		
 	}
 
+	private String dominantCategory(Map<String, Integer> categoryMap) {
+		Map.Entry<String, Integer> max = Utils.maxEntryInMap(categoryMap);
+		if(max.getValue() > 0)
+			return max.getKey();
+		else
+			return null;	
+	}
+	
 	/*
 	 * The test method just tests the sanity of the code
 	 */
-	public void test() {
-		
-		String[] genre = {"action", "comedy", "drama", "horror", "romance", "adventure"};
-		
-		
-		System.out.println("**** TESTING: genre ****");
+	private Map<String, Integer> parseCategory() {	
+		String[] genre = {"action", "adventure", "comedy", "horror", "funny", "scary"};
+		Map<String, Integer> categoryMap = new HashMap<String, Integer>();
+
 		for (int i = 0; i < REVIEWS.size(); i++) {
 			for (int j = 0; j < genre.length; j++) {
-				System.out.println("Frequency of "+genre[j]+" in "+REVIEWS.get(i)+" is "+getDocWordFreq(i, genre[j]));
+				String category;
+				
+				if(genre[j].equals("adventure"))
+					category = "action";
+				else if(genre[j].equals("funny"))
+					category = "comedy";
+				else if(genre[j].equals("scary"))
+					category = "horror";
+				else
+					category = genre[j];
+
+				if(categoryMap.get(category) == null)
+					categoryMap.put(category, getDocWordFreq(i, genre[j]));
+				else 
+					categoryMap.put(category, categoryMap.get(category) + getDocWordFreq(i, genre[j]));
 			}
-			
-			try {
-				Thread.sleep(500);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 		
-		/*
-		System.out.println("**** TESTING: getDocWordFreq(int,int) ****");
-		for (int i = 0; i < REVIEWS.size(); i++) {
-			System.out.println("Frequency of "+TERMS.get(0)+" in "+REVIEWS.get(i)+" is "+getDocWordFreq(i, 0));
-		}
-		
-		log.info("**** TESTING: getDocWordFreq(int,String) ****");
-		for (int i = 0; i < REVIEWS.size(); i++) {
-			System.out.println("Frequency of "+TERMS.get(1)+" in "+REVIEWS.get(i)+" is "+getDocWordFreq(i, TERMS.get(1).w));
-		}
-		
-		log.info("**** TESTING: Compute document vectors) ***");
-		for (int i = 0; i < REVIEWS.size(); i++) {
-			ArrayList<Double> vector = getDocumentVector(i, MAX_TERMS);
-			System.out.println(REVIEWS.get(i)+": "+vector);
-		}
-		
-		
-		log.info("**** TESTING: Compute cosine similarity ***");
-		for (int i = 0; i < 3; i++) {
-			for (int j = 0; j < REVIEWS.size(); j++) {
-				System.out.println("User "+i+" Document "+j+": "+cosineSimilarity(i, j));
-			}
-		}*/
+		return categoryMap;
+	}
+	
+	private String getDominantCategory() {
+		return dominantCategory(parseCategory());
 	}
 	
 	/* 

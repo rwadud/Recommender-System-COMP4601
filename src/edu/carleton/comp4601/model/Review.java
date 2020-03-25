@@ -8,6 +8,7 @@ public class Review implements Serializable, Cloneable{
 	private String pageid;
 	private String userid;
 	private String content;
+	private String category;
 	private Float score;
 	private Float sentimentScore = null;
 	
@@ -48,6 +49,14 @@ public class Review implements Serializable, Cloneable{
 	
 	public String getUserId() {
 		return userid;
+	}
+	
+	public String getCategory() {
+		return category;
+	}
+	
+	public void setCategory(String s) {
+		category = s;
 	}
 	
 	@Override

@@ -17,6 +17,7 @@ import edu.carleton.comp4601.model.Page;
 import edu.carleton.comp4601.model.Review;
 import edu.carleton.comp4601.model.Reviews;
 import edu.carleton.comp4601.model.User;
+import edu.carleton.comp4601.resources.CorpusParser;
 import javafx.scene.chart.PieChart.Data;
 
 public class DataLoader {
@@ -101,7 +102,13 @@ public class DataLoader {
 					String reviewid = file.getName().replace(".html", "");
 					
 					Review review = loadReview(file);
-					System.out.println(reviewid);
+					
+					String genre = CorpusParser.getDominantCategory(review);
+					
+					review.setCategory(genre);
+					
+					System.out.println(reviewid + " detected genre for review is "+genre);
+					//System.out.println(reviewid);
 					if(review!=null)
 						DatabaseManager.getInstance().insertReview(review);
 					
