@@ -15,10 +15,7 @@ public class CategoryAnalyzer {
 	}
 	
 	public void analyze() {
-		
-		
-				
-				
+
 	}
 	
 }
