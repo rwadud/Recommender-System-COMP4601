@@ -1,6 +1,9 @@
 package edu.carleton.comp4601.model;
 
 import java.io.Serializable;
+import java.util.Map;
+
+import org.jongo.marshall.jackson.oid.MongoObjectId;
 
 public class Review implements Serializable, Cloneable{
 
@@ -10,7 +13,7 @@ public class Review implements Serializable, Cloneable{
 	private String content;
 	private String category;
 	private Float score;
-	private Float sentimentScore = null;
+	private Map<String, Integer> sentimentScores;
 	
 	public Review(String id) {
 		pageid = id;
@@ -35,12 +38,12 @@ public class Review implements Serializable, Cloneable{
 		return score;
 	}
 	
-	public float getSentimentScore() {
-		return sentimentScore;
+	public Map<String, Integer> getSentimentScores() {
+		return sentimentScores;
 	}
 	
-	public void setSentimentScore(float s) {
-		sentimentScore = s;
+	public void setSentimentScores(Map<String, Integer> m) {
+		sentimentScores = m;
 	}
 	
 	public String getPageId() {

@@ -2,6 +2,7 @@ package edu.carleton.comp4601.database;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.bson.Document;
@@ -15,6 +16,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
+import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -183,6 +185,37 @@ public class DatabaseManager {
 		Document query = new Document("userid", review.getUserId());
 		query.append("pageid", review.getUserId());
 		users.replaceOne(query, Document.parse(gson.toJson(review)));
+	}
+	
+	// returns the the category the user has the most reviews in
+	public String getUserCategory(String userid) throws Exception {
+		return getCategory(userid, "userid");
+	}
+	
+	public String getPageCategory(String pageid) throws Exception {
+		return getCategory(pageid, "pageid");
+	}
+	
+	private String getCategory(String id, String type) throws Exception {	
+		if(!(type.equals("userid") || type.equals("pageid")))
+			throw new Exception("Wrong type identfier");
+		
+		Document matchFields = new Document(type, id);
+		matchFields.append("category", new BasicDBObject("$exists", true));
+		Document match = new Document("$match", matchFields);
+
+		Document groupFields = new Document("_id", "$category");
+		groupFields.append("count", new BasicDBObject( "$sum", 1));
+		Document group = new Document("$group", groupFields);
+
+		AggregateIterable<Document> output = reviews.aggregate(Arrays.asList(
+		        match,
+		        group,
+		        new Document("$sort", new Document("count", -1)),
+		        new Document("$limit", 1))
+				);
+		
+		return output.first().getString("_id");
 	}
 
 }
