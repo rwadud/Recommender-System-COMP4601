@@ -38,8 +38,8 @@ public class DataLoader {
 					Document doc = Jsoup.parse(file, "UTF-8", "");
 					
 					String userid = doc.title();
-					
-					User user = new User(userid);
+
+		    		User user = new User(userid);
 					
 					DatabaseManager.getInstance().insertUser(user);
 					
@@ -137,10 +137,10 @@ public class DataLoader {
 	public static void main(String[] args) {
 
 		try {
-			DatabaseManager.getInstance().reset();
-			DataLoader.loadUserData();
-			DataLoader.loadPageData();
-			DataLoader.loadReviews();
+			//DatabaseManager.getInstance().reset();
+			//DataLoader.loadUserData();
+			//DataLoader.loadPageData();
+			//DataLoader.loadReviews();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
