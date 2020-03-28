@@ -8,6 +8,11 @@ import java.util.Properties;
 
 import org.spark_project.guava.collect.Lists;
 
+import com.google.common.collect.ImmutableMap;
+
+import avro.shaded.com.google.common.collect.Maps;
+import edu.carleton.comp4601.model.Review;
+import edu.carleton.comp4601.model.Sentiment;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.neural.rnn.RNNCoreAnnotations;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -21,23 +26,15 @@ import edu.stanford.nlp.util.CoreMap;
 public class SentimentAnalyzer {
 
 	private static HashMap<String, Float> sentimentMap;
-	private final String document;
 	
-	public SentimentAnalyzer(String document) {
-		this.document = document;
-	}
-	
-	public Map<String, Integer> calculate() {
-		return annotateAndScore();
-	}
-	
-    public Map<String, Integer> annotateAndScore(){
-    	Map<String, Integer> scoreMap = new HashMap<String, Integer>();
-        List<Integer> scores = Lists.newArrayList();
+	private SentimentAnalyzer() {}
+		
+    public static Map<String, Integer> annotateAndScore(String doc){
+    	Map<String, Integer> scoreMap = Maps.newHashMap(ImmutableMap.of("Very positive", 0, "Positive", 0, "Neutral", 0, "Negative", 0, "Very negative", 0));
         Properties props = new Properties();
         props.put("annotators", "tokenize, ssplit, pos, parse, sentiment");
         StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
-        Annotation document = new Annotation(this.document);
+        Annotation document = new Annotation(doc);
         pipeline.annotate(document);
         for (CoreMap sentence : document.get(CoreAnnotations.SentencesAnnotation.class)) {
             Tree annotatedTree = sentence.get(SentimentAnnotatedTree.class);
@@ -51,4 +48,16 @@ public class SentimentAnalyzer {
         return scoreMap;
     }
 	
+    public static void calculate(Review review) {
+    	Map<String, Integer> scores = annotateAndScore(review.getContent());
+    	review.setSentimentScores(scores);
+    	
+    	Integer pos = scores.get("Positive") + scores.get("Very positive");
+    	Integer neg = scores.get("Negative") + scores.get("Very negative");
+    	
+    	Sentiment sentiment = (pos > neg) ? Sentiment.POSITIVE : ((pos < neg) ? Sentiment.NEGATIVE : Sentiment.NEUTRAL);
+    	
+    	System.out.println(sentiment);
+    	review.setSentiment(sentiment);
+    }  
 }

@@ -18,10 +18,11 @@ public class Main {
 			
 			System.out.println("A100JCBNALJFAW user reviewed mostly " + DatabaseManager.getInstance().getUserCategory("A2RHQMV5GD18Z8") + " movies");
 			
-			String text = DatabaseManager.getInstance().getReview("A2RHQMV5GD18Z8", "B002KGREJC").getContent();
+			Review review = DatabaseManager.getInstance().getReview("A2RHQMV5GD18Z8", "B002KGREJC");
 			
-			SentimentAnalyzer sa = new SentimentAnalyzer(text);
-			System.out.println(sa.calculate().toString());
+			
+			SentimentAnalyzer.calculate(review);
+			System.out.println(review.getSentiment().toString());
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

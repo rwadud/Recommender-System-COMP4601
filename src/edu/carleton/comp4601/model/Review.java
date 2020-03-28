@@ -14,6 +14,7 @@ public class Review implements Serializable, Cloneable{
 	private String category;
 	private Float score;
 	private Map<String, Integer> sentimentScores;
+	private Sentiment sentiment;
 	
 	public Review(String id) {
 		pageid = id;
@@ -44,6 +45,14 @@ public class Review implements Serializable, Cloneable{
 	
 	public void setSentimentScores(Map<String, Integer> m) {
 		sentimentScores = m;
+	}
+	
+	public Sentiment getSentiment() {
+		return sentiment;
+	}
+	
+	public void setSentiment(Sentiment s) {
+		sentiment = s;
 	}
 	
 	public String getPageId() {

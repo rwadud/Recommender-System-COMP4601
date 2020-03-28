@@ -12,6 +12,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import edu.carleton.comp4601.analyzers.SentimentAnalyzer;
 import edu.carleton.comp4601.database.DatabaseManager;
 import edu.carleton.comp4601.model.Page;
 import edu.carleton.comp4601.model.Review;
@@ -107,7 +108,9 @@ public class DataLoader {
 					
 					review.setCategory(genre);
 					
-					System.out.println(reviewid + " detected genre for review is "+genre);
+					//SentimentAnalyzer.calculate(review);
+					
+					//System.out.println(reviewid + " detected genre for review is "+genre);
 					//System.out.println(reviewid);
 					if(review!=null)
 						DatabaseManager.getInstance().insertReview(review);
@@ -137,10 +140,18 @@ public class DataLoader {
 	public static void main(String[] args) {
 
 		try {
+			long start = System.currentTimeMillis();
+			
 			DatabaseManager.getInstance().reset();
 			DataLoader.loadUserData();
 			DataLoader.loadPageData();
 			DataLoader.loadReviews();
+			
+			long finish = System.currentTimeMillis();
+			long timeElapsed = finish - start;
+			
+			System.out.println("Took "+ (timeElapsed/1000) + " seconds");
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

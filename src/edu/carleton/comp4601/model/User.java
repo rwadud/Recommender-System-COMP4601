@@ -24,7 +24,7 @@ public class User implements Serializable, Cloneable{
 		this.cluster = cluster;
 	}
 	
-	public List<Review> getReview() throws Exception{
+	public List<Review> getReviews() throws Exception{
 		return DatabaseManager.getInstance().getUserReviews(userid);
 	}
 }
