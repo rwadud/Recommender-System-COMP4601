@@ -1,6 +1,7 @@
 package edu.carleton.comp4601.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,10 @@ public class User implements Serializable, Cloneable{
 	
 	public Integer getCluster() {
 		return cluster;
+	}
+	
+	public String getUserId() {
+		return userid;
 	}
 
 	public void setCluster(Integer cluster) {

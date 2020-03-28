@@ -39,8 +39,8 @@ public class DataLoader {
 					Document doc = Jsoup.parse(file, "UTF-8", "");
 					
 					String userid = doc.title();
-					
-					User user = new User(userid);
+
+		    		User user = new User(userid);
 					
 					DatabaseManager.getInstance().insertUser(user);
 					
@@ -140,6 +140,7 @@ public class DataLoader {
 	public static void main(String[] args) {
 
 		try {
+			/*
 			long start = System.currentTimeMillis();
 			
 			DatabaseManager.getInstance().reset();
@@ -151,7 +152,7 @@ public class DataLoader {
 			long timeElapsed = finish - start;
 			
 			System.out.println("Took "+ (timeElapsed/1000) + " seconds");
-			
+			 */
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
