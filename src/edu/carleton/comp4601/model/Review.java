@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.jongo.marshall.jackson.oid.MongoObjectId;
 
+import edu.carleton.comp4601.analyzers.SentimentAnalyzer;
+
 public class Review implements Serializable, Cloneable{
 
 	private static final long serialVersionUID = 4L;
@@ -27,6 +29,10 @@ public class Review implements Serializable, Cloneable{
 		this.score = score;
 	}
 	
+	public String getId() {
+		return userid+"-"+pageid;
+	}
+	
 	public void setContent(String text) {
 		this.content = text;
 	}
@@ -43,8 +49,9 @@ public class Review implements Serializable, Cloneable{
 		return sentimentScores;
 	}
 	
-	public void setSentimentScores(Map<String, Integer> m) {
-		sentimentScores = m;
+	public void setSentimentScores(Map<String, Integer> scores) {
+		sentimentScores = scores;
+		sentiment = SentimentAnalyzer.calculateSentiment(scores);
 	}
 	
 	public Sentiment getSentiment() {
@@ -74,6 +81,6 @@ public class Review implements Serializable, Cloneable{
 	@Override
 	public String toString() {
 		// TODO Auto-generated method stub
-		return userid+"-"+pageid;
+		return userid+"-"+pageid+".html";
 	}
 }

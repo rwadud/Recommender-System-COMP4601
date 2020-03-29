@@ -20,8 +20,6 @@ public class Main {
 			
 			Review review = DatabaseManager.getInstance().getReview("A2RHQMV5GD18Z8", "B002KGREJC");
 			
-			
-			SentimentAnalyzer.calculate(review);
 			System.out.println(review.getSentiment().toString());
 			
 		} catch (Exception e) {

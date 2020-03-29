@@ -1,6 +1,9 @@
 package edu.carleton.comp4601.utility;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,15 +20,19 @@ import edu.carleton.comp4601.database.DatabaseManager;
 import edu.carleton.comp4601.model.Page;
 import edu.carleton.comp4601.model.Review;
 import edu.carleton.comp4601.model.Reviews;
+import edu.carleton.comp4601.model.Sentiment;
 import edu.carleton.comp4601.model.User;
 import edu.carleton.comp4601.resources.CorpusParser;
 import javafx.scene.chart.PieChart.Data;
 
 public class DataLoader {
 	
+	private static final String resourceDir = "./resources";
 	private static final String userDir = "./resources/users";
 	private static final String reviewDir = "./resources/reviews";
 	private static final String pageDir = "./resources/pages";
+	private static Map<String, Map<String, Integer>> sentimentValues = null;
+	private static final String COMMA_DELIMITER = ",";
 	
 	public static void loadUserData() throws IOException {
 		//Map<String, User> map = new HashMap<String, User>();
@@ -94,6 +101,8 @@ public class DataLoader {
 	
 	public static void loadReviews() throws IOException {
 
+		loadSentimentValues();
+		
 		File dir = new File(reviewDir);
 		File[] dirList = dir.listFiles();
 		if (dirList != null) {
@@ -108,17 +117,68 @@ public class DataLoader {
 					
 					review.setCategory(genre);
 					
-					//SentimentAnalyzer.calculate(review);
+					System.out.println(review.toString());
+					Map<String, Integer> sentimentScores = sentimentValues.get(review.getId());
+					
+					if(sentimentScores == null)
+						sentimentScores = SentimentAnalyzer.annotateAndScore(review.getContent());
+					
+					review.setSentimentScores(sentimentScores);
 					
 					//System.out.println(reviewid + " detected genre for review is "+genre);
 					//System.out.println(reviewid);
 					if(review!=null)
 						DatabaseManager.getInstance().insertReview(review);
-					
-					//Reviews.add(reviewid, loadReview(file));
+
 				}
 			}
 		}
+		
+		sentimentValues.clear();
+	}
+	
+	public static void loadSentimentValues() {
+		if(sentimentValues == null) {
+			System.out.println("Loading sentiment values from csv.");
+			sentimentValues = new HashMap<String, Map<String,Integer>>();
+			try {
+				loadSentimentFile("sentiment-reviews-individual.csv");
+				loadSentimentFile("sentiment-reviews-individual2.csv");
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else {
+			System.out.println("Sentiment values already loaded.");
+		}
+		
+	}
+	
+	private static void loadSentimentFile(String file) throws Exception{
+	
+		file = resourceDir + "/" + file;
+		BufferedReader br = new BufferedReader(new FileReader(file));
+	    String line;
+	    
+	    int i = 0;
+		while ((line = br.readLine()) != null) {
+			if(i>0) {
+				Map<String, Integer> map = new HashMap<String, Integer>();
+				
+			    String[] values = line.split(COMMA_DELIMITER);
+			    String id = values[0].replace(".html", "");
+			    
+			    map.put("Very positive", Integer.valueOf(values[1]));
+			    map.put("Positive", Integer.valueOf(values[2]));
+			    map.put("Neutral", Integer.valueOf(values[3]));
+			    map.put("Negative", Integer.valueOf(values[4]));
+			    map.put("Very negative", Integer.valueOf(values[5]));
+			    
+			    sentimentValues.put(id, map);
+			}
+			i++;
+		}
+
 	}
 	
 	public static Review loadReview(File file) throws IOException {
@@ -142,10 +202,11 @@ public class DataLoader {
 		try {
 			/*
 			long start = System.currentTimeMillis();
-			
+
 			DatabaseManager.getInstance().reset();
 			DataLoader.loadUserData();
 			DataLoader.loadPageData();
+			DataLoader.loadSentimentValues();
 			DataLoader.loadReviews();
 			
 			long finish = System.currentTimeMillis();

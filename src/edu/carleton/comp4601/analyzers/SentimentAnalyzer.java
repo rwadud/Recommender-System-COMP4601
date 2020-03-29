@@ -47,17 +47,15 @@ public class SentimentAnalyzer {
         }
         return scoreMap;
     }
-	
-    public static void calculate(Review review) {
-    	Map<String, Integer> scores = annotateAndScore(review.getContent());
-    	review.setSentimentScores(scores);
-    	
+    
+    public static Sentiment calculateSentiment(Map<String, Integer> scores) {
     	Integer pos = scores.get("Positive") + scores.get("Very positive");
     	Integer neg = scores.get("Negative") + scores.get("Very negative");
     	
     	Sentiment sentiment = (pos > neg) ? Sentiment.POSITIVE : ((pos < neg) ? Sentiment.NEGATIVE : Sentiment.NEUTRAL);
     	
     	System.out.println(sentiment);
-    	review.setSentiment(sentiment);
-    }  
+    	return sentiment;
+    }
+    
 }
