@@ -154,26 +154,26 @@ public class CorpusParser {
 	 * The test method just tests the sanity of the code
 	 */
 	private Map<String, Integer> parseCategory() {	
-		String[] genre = {"action", "adventure", "comedy", "horror", "funny", "scary"};
+		String[] genreList = {"action", "adventure", "comedy", "horror", "funny", "scary"};
 		Map<String, Integer> categoryMap = new HashMap<String, Integer>();
 
 		for (int i = 0; i < REVIEWS.size(); i++) {
-			for (int j = 0; j < genre.length; j++) {
-				String category;
+			for (int j = 0; j < genreList.length; j++) {
+				String genre;
 				
-				if(genre[j].equals("adventure"))
-					category = "action";
-				else if(genre[j].equals("funny"))
-					category = "comedy";
-				else if(genre[j].equals("scary"))
-					category = "horror";
+				if(genreList[j].equals("adventure"))
+					genre = "action";
+				else if(genreList[j].equals("funny"))
+					genre = "comedy";
+				else if(genreList[j].equals("scary"))
+					genre = "horror";
 				else
-					category = genre[j];
+					genre = genreList[j];
 
-				if(categoryMap.get(category) == null)
-					categoryMap.put(category, getDocWordFreq(i, genre[j]));
+				if(categoryMap.get(genre) == null)
+					categoryMap.put(genre, getDocWordFreq(i, genreList[j]));
 				else 
-					categoryMap.put(category, categoryMap.get(category) + getDocWordFreq(i, genre[j]));
+					categoryMap.put(genre, categoryMap.get(genre) + getDocWordFreq(i, genreList[j]));
 			}
 		}
 		

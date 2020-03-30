@@ -15,4 +15,10 @@ public class Utils {
 	    }
 	    return maxEntry;
 	}
+	
+	public static void printTimeElapsed(long start) {
+		long finish = System.currentTimeMillis();
+		long timeElapsed = finish - start;
+		System.out.println("Took "+ (timeElapsed/1000) + " seconds");
+	}
 }

@@ -301,12 +301,12 @@ public class ContextualAdvertisingSystem {
 		return html;
 	}
 
-	// Display advertisements for given category of user communities, refer to
+	// Display advertisements for given genre of user communities, refer to
 	// /readme endpoint for help displaying desired content
-	@Path("advertising/{category}")
+	@Path("advertising/{genre}")
 	@GET
 	@Produces(MediaType.TEXT_HTML)
-	public String advertisingCategoryProcessor(@PathParam("category") String category) {
+	public String advertisingCategoryProcessor(@PathParam("genre") String genre) {
 
 		String title = "<head><title>" + "CAS - Advertising" + "</title>";
 		String bodyOpen = "<body style=\"background-color:lightyellow;\">";
@@ -318,10 +318,10 @@ public class ContextualAdvertisingSystem {
 				+ "tr:hover {background-color:#f5f5f5;}\r\n" + "</style></head>";
 		
 		// HTML output and table config
-		String html = "<h1 style=\"padding: 15px;\" align=\"center\">Advertising</h1><table style= \"width:100%\"><tr> <th> Category </th> <th>Advertisement Samples</th> </tr>";
+		String html = "<h1 style=\"padding: 15px;\" align=\"center\">Advertising</h1><table style= \"width:100%\"><tr> <th> Genre </th> <th>Advertisement Samples</th> </tr>";
 		String ending = "</table></body></html>";
 		
-		if (category.equals("actionclassics")) {
+		if (genre.equals("actionclassics")) {
 			html = html + "<tr><td>" + " Action & Classics" + "</td><td>"
 					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/actionAd1.png\" alt=\"Action 1 Ad\">"
 					+ "</td></tr>";
@@ -331,7 +331,7 @@ public class ContextualAdvertisingSystem {
 			html = html + "<tr><td>" + " Action & Classics" + "</td><td>"
 					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/actionAd3.png\" alt=\"Action 3 Ad\">"
 					+ "</td></tr>";
-		} else if (category.equals("fearfanatics")) {
+		} else if (genre.equals("fearfanatics")) {
 			html = html + "<tr><td>" + " Fear Fanatics" + "</td><td>"
 					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/horrorAd1.png\" alt=\"Horror 1 Ad\">"
 					+ "</td></tr>";
@@ -341,7 +341,7 @@ public class ContextualAdvertisingSystem {
 			html = html + "<tr><td>" + " Fear Fanatics" + "</td><td>"
 					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/horrorAd3.png\" alt=\"Horror 3 Ad\">"
 					+ "</td></tr>";
-		} else if (category.equals("laughlovers")) {
+		} else if (genre.equals("laughlovers")) {
 			html = html + "<tr><td>" + " Laugh Lovers" + "</td><td>"
 					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/comedyAd1.png\" alt=\"Comedy 1 Ad\">"
 					+ "</td></tr>";

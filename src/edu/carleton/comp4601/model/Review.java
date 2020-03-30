@@ -13,7 +13,7 @@ public class Review implements Serializable, Cloneable{
 	private String pageid;
 	private String userid;
 	private String content;
-	private String category;
+	private String genre;
 	private Float score;
 	private Map<String, Integer> sentimentScores;
 	private Sentiment sentiment;
@@ -71,11 +71,11 @@ public class Review implements Serializable, Cloneable{
 	}
 	
 	public String getCategory() {
-		return category;
+		return genre;
 	}
 	
 	public void setCategory(String s) {
-		category = s;
+		genre = s;
 	}
 	
 	@Override
