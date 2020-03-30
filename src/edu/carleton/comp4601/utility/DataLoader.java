@@ -81,7 +81,15 @@ public class DataLoader {
 					String pageid = doc.title();
 					Page page = new Page(pageid);
 					
-					DatabaseManager.getInstance().insertPage(page);
+					try {
+						String genre = DatabaseManager.getInstance().getPageCategory(pageid);
+						page.setCategory(genre);
+						DatabaseManager.getInstance().insertPage(page);
+						
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					
 					/*
 					Elements links = doc.select("a[href]");
@@ -200,20 +208,20 @@ public class DataLoader {
 	public static void main(String[] args) {
 
 		try {
-			
 			long start = System.currentTimeMillis();
 
-			//DatabaseManager.getInstance().reset();
-			//DataLoader.loadUserData();
-			//DataLoader.loadPageData();
-			//DataLoader.loadSentimentValues();
-			//DataLoader.loadReviews();
+			DatabaseManager.getInstance().reset();
+			DataLoader.loadSentimentValues();
+			DataLoader.loadReviews();
+			DataLoader.loadUserData();
+			DataLoader.loadPageData();
+
 			
 			long finish = System.currentTimeMillis();
 			long timeElapsed = finish - start;
 			
 			System.out.println("Took "+ (timeElapsed/1000) + " seconds");
-			 
+      
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

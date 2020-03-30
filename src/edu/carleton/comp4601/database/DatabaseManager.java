@@ -187,7 +187,17 @@ public class DatabaseManager {
 		users.replaceOne(query, Document.parse(gson.toJson(review)));
 	}
 	
-	// returns the the category the user has the most reviews in
+	public void updatePage(Page page) {
+		Document query = new Document("pageid", page.getPageId());
+		users.replaceOne(query, Document.parse(gson.toJson(page)));
+	}
+	
+	public void updateUser(User user) {
+		Document query = new Document("userid", user.getUserId());
+		users.replaceOne(query, Document.parse(gson.toJson(user)));
+	}
+	
+	// returns the the genre the user has the most reviews in
 	public String getUserCategory(String userid) throws Exception {
 		return getCategory(userid, "userid");
 	}
@@ -201,10 +211,10 @@ public class DatabaseManager {
 			throw new Exception("Wrong type identfier");
 		
 		Document matchFields = new Document(type, id);
-		matchFields.append("category", new BasicDBObject("$exists", true));
+		matchFields.append("genre", new BasicDBObject("$exists", true));
 		Document match = new Document("$match", matchFields);
 
-		Document groupFields = new Document("_id", "$category");
+		Document groupFields = new Document("_id", "$genre");
 		groupFields.append("count", new BasicDBObject( "$sum", 1));
 		Document group = new Document("$group", groupFields);
 
