@@ -200,20 +200,20 @@ public class DataLoader {
 	public static void main(String[] args) {
 
 		try {
-			/*
+			
 			long start = System.currentTimeMillis();
 
-			DatabaseManager.getInstance().reset();
-			DataLoader.loadUserData();
-			DataLoader.loadPageData();
-			DataLoader.loadSentimentValues();
-			DataLoader.loadReviews();
+			//DatabaseManager.getInstance().reset();
+			//DataLoader.loadUserData();
+			//DataLoader.loadPageData();
+			//DataLoader.loadSentimentValues();
+			//DataLoader.loadReviews();
 			
 			long finish = System.currentTimeMillis();
 			long timeElapsed = finish - start;
 			
 			System.out.println("Took "+ (timeElapsed/1000) + " seconds");
-			 */
+			 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
