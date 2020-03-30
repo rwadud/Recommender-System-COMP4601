@@ -19,9 +19,7 @@ public class PreferenceAnalyzer {
 	
 	private static Map<String, String> preferredGenreMap = new HashMap<String, String>();
 	
-	public PreferenceAnalyzer() {
-		
-	}
+	private PreferenceAnalyzer() {}
 	
 	public static void analyze(List<User> users) {
 		
@@ -63,8 +61,10 @@ public class PreferenceAnalyzer {
 		
 	}
 	
-	public static void main(String[] args) {
-		PreferenceAnalyzer.analyze(DatabaseManager.getInstance().getUsers());
+	/*
+	 * Returns a map of userid and genre
+	 */
+	public Map<String, String> getPreferredGenreMap(){
+		return preferredGenreMap;
 	}
-	
 }

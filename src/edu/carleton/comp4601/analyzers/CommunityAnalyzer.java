@@ -16,21 +16,18 @@ import edu.carleton.comp4601.utility.Kmeans;
 
 public class CommunityAnalyzer {
 	
-	String[] communityNames = {"Community 1", "Community 2", "Community 3"};
-	List<Community> communities;
+	private static String[] communityNames = {"Community 1", "Community 2", "Community 3"};
+	private static List<Community> communities = new ArrayList<Community>();;
 
-	public CommunityAnalyzer() {
-		communities = new ArrayList<Community>();
+	private CommunityAnalyzer() {}
+	
+	public static void analyze(List<User> users) {
 		
 		for (int i = 0; i < communityNames.length; i++) {
 			communities.add(new Community(communityNames[i]));
 		}
 		
-	}
-	
-	public void analyze(List<User> users) {
 		Map<String, Integer> clusterMap = Kmeans.getUserClusters(users);
-		
 		for(Map.Entry<String, Integer> entry : clusterMap.entrySet()) {
 			try {
 				Integer cluster = entry.getValue();
@@ -50,12 +47,7 @@ public class CommunityAnalyzer {
 		
 	}
 	
-	public List<Community> getCommunities(){
+	public static List<Community> getCommunities(){
 		return communities;
-	}
-	
-	public static void main(String[] args) {
-		CommunityAnalyzer ca = new CommunityAnalyzer();
-		ca.analyze(DatabaseManager.getInstance().getUsers());
 	}
 }
