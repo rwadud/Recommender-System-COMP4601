@@ -26,6 +26,7 @@ public class ContextualAdvertisingSystem {
 	private static final String PARTNERS = "Alexander Nguyen & Redwan Wadud";
 	private static boolean contextHit = false;
 	private static boolean analyzer = false;
+	private static List<Community> communities = null;
 
 	// Display name as test that endpoints are working
 	@GET
@@ -86,6 +87,29 @@ public class ContextualAdvertisingSystem {
 			analyzer = true;
 		}
 
+		communities = CommunityAnalyzer.getCommunities();
+		
+		for (Community community : communities) {
+			List<User> members = community.getMembers();
+			for (User member : members) {
+				String userID = member.getUserId();
+				String preferredGenre_load = member.getPreferredGenre();
+				String preferredGenre = preferredGenre_load.substring(0, 1).toUpperCase()
+						+ preferredGenre_load.substring(1);
+				
+				html = html + "<tr><td>" + userID + "</td><td>" + preferredGenre + "</td><td>";
+				
+				List<Review> reviews = member.getReviews();
+				for (Review review : reviews)
+					html = html + review.getPageId() + "(" + review.getScore()+","+ review.getSentiment() + ")" + ", ";
+				
+				html = html + "</td> <td> ";
+				
+				html+=community.getCommunityName();
+			}
+		}
+		
+		/*
 		for (int i = 0; i < users.size(); i++) {
 			String userID = users.get(i).getUserId();
 
@@ -115,7 +139,7 @@ public class ContextualAdvertisingSystem {
 						html = html + "Horror Story";
 				}
 			}
-		}
+		}*/
 
 		// Put it all together
 		html = title + style + bodyOpen + html + ending;
@@ -148,8 +172,6 @@ public class ContextualAdvertisingSystem {
 			html = "<h1 style=\"padding: 15px;\" align=\"center\">Community</h1><table style= \"width:100%\"> <tr> <th>Community</th> <th>Community Members</th></tr>";
 			String ending = " </td>  </tr> </table></body></html>";
 
-			List<Community> communities = CommunityAnalyzer.getCommunities();
-
 			// Now add each user profile to the table via the html string
 			String actionCommunity = "";
 			String comedyCommunity = "";
@@ -158,11 +180,11 @@ public class ContextualAdvertisingSystem {
 			for (Community community : communities) {
 				List<User> members = community.getMembers();
 				for (User member : members) {
-					if (community.getCommunityName() == "Community 1")
+					if (community.getCommunityName().equals("Action Packers!"))
 						actionCommunity = actionCommunity + member.getUserId() + ", ";
-					else if (community.getCommunityName() == "Community 2")
+					else if (community.getCommunityName().equals("Funny People..."))
 						comedyCommunity = comedyCommunity + member.getUserId() + ", ";
-					else if (community.getCommunityName() == "Community 3")
+					else if (community.getCommunityName().equals("Horror Story"))
 						horrorCommunity = horrorCommunity + member.getUserId() + ", ";
 				}
 			}

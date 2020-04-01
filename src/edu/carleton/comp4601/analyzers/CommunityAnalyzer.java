@@ -16,7 +16,7 @@ import edu.carleton.comp4601.utility.Kmeans;
 
 public class CommunityAnalyzer {
 	
-	private static String[] communityNames = {"Community 1", "Community 2", "Community 3"};
+	private static String[] communityNames = {"Action Packers!", "Funny People...", "Horror Story"};
 	private static List<Community> communities = new ArrayList<Community>();;
 
 	private CommunityAnalyzer() {}
