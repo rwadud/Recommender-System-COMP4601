@@ -344,33 +344,33 @@ public class ContextualAdvertisingSystem {
 		String ending = "</table></body></html>";
 
 		if (genre.equals("action")) {
-			html = html + "<tr><td>" + " Action & Classics" + "</td><td>"
+			html = html + "<tr><td style=\"text-align:center;\">" + "<b>Action</b>" + "</td><td>"
 					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/actionAd1.png\" alt=\"Action 1 Ad\"/>"
 					+ "</td></tr>";
-			html = html + "<tr><td>" + " Action & Classics" + "</td><td>"
+			html = html + "<tr><td style=\"text-align:center;\">" + "<b>Action</b>" + "</td><td>"
 					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/actionAd2.png\" alt=\"Action 2 Ad\"/>"
 					+ "</td></tr>";
-			html = html + "<tr><td>" + " Action & Classics" + "</td><td>"
+			html = html + "<tr><td style=\"text-align:center;\">" + "<b>Action</b>" + "</td><td>"
 					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/actionAd3.png\" alt=\"Action 3 Ad\"/>"
 					+ "</td></tr>";
 		} else if (genre.equals("horror")) {
-			html = html + "<tr><td>" + " Fear Fanatics" + "</td><td>"
+			html = html + "<tr><td style=\"text-align:center;\">" + "<b>Horror</b>" + "</td><td>"
 					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/horrorAd1.png\" alt=\"Horror 1 Ad\"/>"
 					+ "</td></tr>";
-			html = html + "<tr><td>" + " Fear Fanatics" + "</td><td>"
+			html = html + "<tr><td style=\"text-align:center;\">" + "<b>Horror</b>" + "</td><td>"
 					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/horrorAd2.png\" alt=\"Horror 2 Ad\"/>"
 					+ "</td></tr>";
-			html = html + "<tr><td>" + " Fear Fanatics" + "</td><td>"
+			html = html + "<tr><td style=\"text-align:center;\">" + "<b>Horror</b>" + "</td><td>"
 					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/horrorAd3.png\" alt=\"Horror 3 Ad\"/>"
 					+ "</td></tr>";
 		} else if (genre.equals("comedy")) {
-			html = html + "<tr><td>" + " Laugh Lovers" + "</td><td>"
+			html = html + "<tr><td style=\"text-align:center;\">" + "<b>Comedy</b>" + "</td><td>"
 					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/comedyAd1.png\" alt=\"Comedy 1 Ad\"/>"
 					+ "</td></tr>";
-			html = html + "<tr><td>" + " Laugh Lovers" + "</td><td>"
+			html = html + "<tr><td style=\"text-align:center;\">" + "<b>Comedy</b>" + "</td><td>"
 					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/comedyAd2.png\" alt=\"Comedy 2 Ad\"/>"
 					+ "</td></tr>";
-			html = html + "<tr><td>" + " Laugh Lovers" + "</td><td>"
+			html = html + "<tr><td style=\"text-align:center;\">" + "<b>Comedy</b>" + "</td><td>"
 					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/comedyAd2.png\" alt=\"Comedy 3 Ad\"/>"
 					+ "</td></tr>";
 		}
