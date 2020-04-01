@@ -4,8 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.spark_project.guava.collect.ImmutableMap;
-
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import edu.carleton.comp4601.database.DatabaseManager;

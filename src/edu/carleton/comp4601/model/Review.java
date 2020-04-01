@@ -3,8 +3,6 @@ package edu.carleton.comp4601.model;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.jongo.marshall.jackson.oid.MongoObjectId;
-
 import edu.carleton.comp4601.analyzers.SentimentAnalyzer;
 
 public class Review implements Serializable, Cloneable{
