@@ -1,7 +1,5 @@
 build
 bin
-resources/*
-WebContent/WEB-INF/lib/stanford-corenlp-3.9.2-models.jar
 .war
 .zip
 .class

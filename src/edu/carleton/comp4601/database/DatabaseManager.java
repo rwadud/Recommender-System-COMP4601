@@ -25,6 +25,7 @@ import com.mongodb.client.model.IndexOptions;
 import edu.carleton.comp4601.model.Page;
 import edu.carleton.comp4601.model.Review;
 import edu.carleton.comp4601.model.User;
+import edu.carleton.comp4601.utility.Utils;
 
 public class DatabaseManager {
 	private static String dbName = "rs";
@@ -35,6 +36,7 @@ public class DatabaseManager {
 	private MongoCollection<Document> pages;
 	private MongoCollection<Document> users;
 	private MongoCollection<Document> reviews;
+	private MongoCollection<Document> settings;
 
 	protected Gson gson = new Gson();
 
@@ -44,6 +46,7 @@ public class DatabaseManager {
 		pages = db.getCollection("pages");
 		users = db.getCollection("users");
 		reviews = db.getCollection("reviews");
+		settings = db.getCollection("settings");
 
 		createUniqueIndex();
 	}
@@ -63,16 +66,38 @@ public class DatabaseManager {
 
 		Document index1 = new Document("userid", 1);
 		Document index2 = new Document("pageid", 1);
-
 		Document index3 = new Document("userid", 1);
+		Document index4 = new Document("value", 1);
 		index3.append("pageid", 1);
 
 		users.createIndex(index1, new IndexOptions().unique(true));
 		pages.createIndex(index2, new IndexOptions().unique(true));
 		reviews.createIndex(index3, new IndexOptions().unique(true));
+		settings.createIndex(index4, new IndexOptions().unique(true));
 
 	}
 
+	public boolean dataExists() {
+		if(pages.count() == 1079 && users.count() == 1252 && reviews.count() == 82201)
+			return true;
+		return false;
+	}
+	
+	public String getTempDir() {
+		
+		String dir;
+		Document doc = settings.find(new Document("option","temp_dir")).first();
+		
+		if(doc !=null ) {
+			dir = doc.getString("value");
+		} else {
+			dir = Utils.newTempDir();
+			settings.insertOne(new Document("option","temp_dir").append("value", dir));
+		}
+		
+		return dir;
+	}
+	
 	public synchronized void insertPage(Page p) {
 		pages.insertOne(Document.parse(gson.toJson(p)));
 	}

@@ -5,15 +5,21 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
+import org.apache.commons.io.FilenameUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import com.google.common.io.Files;
 
 import edu.carleton.comp4601.analyzers.SentimentAnalyzer;
 import edu.carleton.comp4601.database.DatabaseManager;
@@ -27,15 +33,17 @@ import javafx.scene.chart.PieChart.Data;
 
 public class DataLoader {
 	
-	private static final String resourceDir = "./resources";
-	private static final String userDir = "./resources/users";
-	private static final String reviewDir = "./resources/reviews";
-	private static final String pageDir = "./resources/pages";
+	private static final String resourceDir = Utils.TEMP_DIR;
+	private static final String userDir = resourceDir + "/users";
+	private static final String reviewDir = resourceDir + "/reviews";
+	private static final String pageDir = resourceDir + "/pages";
 	private static Map<String, Map<String, Integer>> sentimentValues = null;
 	private static final String COMMA_DELIMITER = ",";
+	private static DatabaseManager db = DatabaseManager.getInstance();
+	private static boolean fetchedFromSikaman = false;
 	
 	public static void loadUserData() throws IOException {
-		//Map<String, User> map = new HashMap<String, User>();
+		System.out.println("Loading users");
 		
 		File dir = new File(userDir);
 		File[] dirList = dir.listFiles();
@@ -49,18 +57,8 @@ public class DataLoader {
 
 		    		User user = new User(userid);
 					
-					DatabaseManager.getInstance().insertUser(user);
-					
-					/*
-					Elements links = doc.select("a[href]");
-					for (Element link : links) {
-						String pageid = link.text();
-						String reviewid = userid+"-"+pageid;
-						user.addReview(Reviews.get(reviewid));
-					}
-					
-					map.put(userid, user);
-					*/
+		    		db.insertUser(user);
+
 				}
 			}
 		}
@@ -69,8 +67,8 @@ public class DataLoader {
 	}
 
 	public static void loadPageData() throws IOException {
-		//Map<String, Page> map = new HashMap<String, Page>();
-		
+
+		System.out.println("Loading pages");
 		File dir = new File(pageDir);
 		File[] dirList = dir.listFiles();
 		if (dirList != null) {
@@ -82,25 +80,15 @@ public class DataLoader {
 					Page page = new Page(pageid);
 					
 					try {
-						String genre = DatabaseManager.getInstance().getPageCategory(pageid);
+						String genre = db.getPageCategory(pageid);
 						page.setCategory(genre);
-						DatabaseManager.getInstance().insertPage(page);
+						db.insertPage(page);
 						
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					
-					/*
-					Elements links = doc.select("a[href]");
-					for (Element link : links) {
-						String userid = link.text();
-						String reviewid = userid+"-"+pageid;
-						page.addReview(Reviews.get(reviewid));
-					}
-					
-					map.put(pageid, page);
-					*/
+
 				}
 			}
 		}
@@ -109,7 +97,9 @@ public class DataLoader {
 	
 	public static void loadReviews() throws IOException {
 
-		loadSentimentValues();
+		System.out.println("Loading reviews");
+		if(sentimentValues == null)
+			loadSentimentValues();
 		
 		File dir = new File(reviewDir);
 		File[] dirList = dir.listFiles();
@@ -125,18 +115,15 @@ public class DataLoader {
 					
 					review.setCategory(genre);
 					
-					System.out.println(review.toString());
 					Map<String, Integer> sentimentScores = sentimentValues.get(review.getId());
 					
 					if(sentimentScores == null)
-						sentimentScores = SentimentAnalyzer.annotateAndScore(review.getContent());
+						sentimentScores = SentimentAnalyzer.getDefaultValues();
 					
 					review.setSentimentScores(sentimentScores);
 					
-					//System.out.println(reviewid + " detected genre for review is "+genre);
-					//System.out.println(reviewid);
 					if(review!=null)
-						DatabaseManager.getInstance().insertReview(review);
+						db.insertReview(review);
 
 				}
 			}
@@ -150,10 +137,15 @@ public class DataLoader {
 			System.out.println("Loading sentiment values from csv.");
 			sentimentValues = new HashMap<String, Map<String,Integer>>();
 			try {
-				loadSentimentFile("sentiment-reviews-individual.csv");
-				loadSentimentFile("sentiment-reviews-individual2.csv");
+				
+				if(fetchedFromSikaman) {
+					loadSentimentFile("sentiment-reviews-individual.csv");
+					loadSentimentFile("sentiment-reviews-individual2.csv");
+				} else {
+					loadSentimentFile("sentiment-reviews.csv");
+				}
+				
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		} else {
@@ -204,29 +196,89 @@ public class DataLoader {
 		return review;
 	}
 
-	
-	public static void main(String[] args) {
-
-		try {
+	public static void fetchFromSikaman() throws Exception {
+		if(!resourceExists()) {
 			long start = System.currentTimeMillis();
-
-			DatabaseManager.getInstance().reset();
-			DataLoader.loadSentimentValues();
-			DataLoader.loadReviews();
-			DataLoader.loadUserData();
-			DataLoader.loadPageData();
-
+			System.out.println("Begin fetching data");
 			
-			long finish = System.currentTimeMillis();
-			long timeElapsed = finish - start;
+			String url = "https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/archive";
+			Document doc = Jsoup.connect(url).get();
+			Elements links = doc.select("a[href]");
+			for (Element element : links) {
+				String link = element.attr("abs:href");
+
+				Utils.downloadFile(link);
+			}
+			fetchedFromSikaman = true;
+			Utils.printTimeElapsed(start);
+		}
+	}
+	
+	public static void fetchData() throws Exception {
+		if(!resourceExists()) {
+			long start = System.currentTimeMillis();
+			System.out.println("Begin fetching data");
 			
-			System.out.println("Took "+ (timeElapsed/1000) + " seconds");
-      
-		} catch (Exception e) {
-			e.printStackTrace();
+			String url = "https://ws8.xsys.tech/archive/resources.zip";
+			Utils.downloadFile(url);
+			
+			Utils.printTimeElapsed(start);
+		}
+	}
+	
+	private static boolean resourceExists(){
+		
+		try {
+			Stream<Path> reviews = java.nio.file.Files.list(Paths.get(reviewDir));
+			Stream<Path> users = java.nio.file.Files.list(Paths.get(userDir));
+			Stream<Path> pages = java.nio.file.Files.list(Paths.get(pageDir));
+			
+		    if(pages.count() == 1079 && users.count() == 1252 && reviews.count() == 82201) {
+		    	System.out.println("Resources already exist");
+		    	return true;
+		    }
+		    
+		} catch (IOException e) {
+
+		}
+
+	    System.out.println("Resources do not exist");
+		return false;
+	}
+	
+	public static void load() throws IOException {
+		
+		if(!db.dataExists()) {
+			try {
+				fetchData();
+			} catch (Exception e) {
+				try {
+					fetchFromSikaman();	
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+			}
+			long start = System.currentTimeMillis();
+			System.out.println("Begin loading data");
+
+			loadSentimentValues();
+			loadReviews();
+			loadUserData();
+			loadPageData();
+
+			Utils.printTimeElapsed(start);
+		} else {
+			System.out.println("Data already exists in db");
 		}
 		
 	}
 	
-	
+	public static void main(String[] args){
+		try {
+			load();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }
