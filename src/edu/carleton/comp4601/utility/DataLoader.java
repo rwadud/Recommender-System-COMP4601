@@ -198,6 +198,7 @@ public class DataLoader {
 
 	public static void fetchFromSikaman() throws Exception {
 		if(!resourceExists()) {
+      
 			long start = System.currentTimeMillis();
 			System.out.println("Begin fetching data");
 			
@@ -267,10 +268,84 @@ public class DataLoader {
 			Utils.printTimeElapsed(start);
 		} else {
 			System.out.println("Data already exists in db");
+
+			long start = System.currentTimeMillis();
+			System.out.println("Begin fetching data");
+			
+			String url = "https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/archive";
+			Document doc = Jsoup.connect(url).get();
+			Elements links = doc.select("a[href]");
+			for (Element element : links) {
+				String link = element.attr("abs:href");
+
+				Utils.downloadFile(link);
+			}
+			fetchedFromSikaman = true;
+			Utils.printTimeElapsed(start);
+		}
+	}
+	
+	public static void fetchData() throws Exception {
+		if(!resourceExists()) {
+			long start = System.currentTimeMillis();
+			System.out.println("Begin fetching data");
+			
+			String url = "https://ws8.xsys.tech/archive/resources.zip";
+			Utils.downloadFile(url);
+			
+			Utils.printTimeElapsed(start);
+
+		}
+	}
+	
+	private static boolean resourceExists(){
+		
+		try {
+			Stream<Path> reviews = java.nio.file.Files.list(Paths.get(reviewDir));
+			Stream<Path> users = java.nio.file.Files.list(Paths.get(userDir));
+			Stream<Path> pages = java.nio.file.Files.list(Paths.get(pageDir));
+			
+		    if(pages.count() == 1079 && users.count() == 1252 && reviews.count() == 82201) {
+		    	System.out.println("Resources already exist");
+		    	return true;
+		    }
+		    
+		} catch (IOException e) {
+
+		}
+
+	    System.out.println("Resources do not exist");
+		return false;
+	}
+	
+
+	public static void load() throws IOException {
+		
+		if(!db.dataExists()) {
+			try {
+				fetchData();
+			} catch (Exception e) {
+				try {
+					fetchFromSikaman();	
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+			}
+			long start = System.currentTimeMillis();
+			System.out.println("Begin loading data");
+
+			loadSentimentValues();
+			loadReviews();
+			loadUserData();
+			loadPageData();
+
+			Utils.printTimeElapsed(start);
+		} else {
+			System.out.println("Data already exists in db");
 		}
 		
 	}
-	
+
 	public static void main(String[] args){
 		try {
 			load();
