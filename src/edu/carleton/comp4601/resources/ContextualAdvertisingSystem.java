@@ -10,7 +10,11 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import edu.carleton.comp4601.analyzers.CommunityAnalyzer;
+import edu.carleton.comp4601.analyzers.PreferenceAnalyzer;
 import edu.carleton.comp4601.database.DatabaseManager;
+import edu.carleton.comp4601.model.Community;
+import edu.carleton.comp4601.model.Page;
 import edu.carleton.comp4601.model.Review;
 import edu.carleton.comp4601.model.User;
 
@@ -21,6 +25,7 @@ public class ContextualAdvertisingSystem {
 	private static final String PROJNAME = "Contextual Advertising System (CAS)";
 	private static final String PARTNERS = "Alexander Nguyen & Redwan Wadud";
 	private static boolean contextHit = false;
+	private static boolean analyzer = false;
 
 	// Display name as test that endpoints are working
 	@GET
@@ -75,10 +80,17 @@ public class ContextualAdvertisingSystem {
 
 		List<User> users = DatabaseManager.getInstance().getUsers();
 
-		// for (int i = 0; i < users.size(); i++) {
-		for (int i = 0; i < 10; i++) {
+		if (analyzer == false) {
+			CommunityAnalyzer.analyze(users);
+			PreferenceAnalyzer.analyze(users);
+			analyzer = true;
+		}
+
+		for (int i = 0; i < users.size(); i++) {
 			String userID = users.get(i).getUserId();
-			String preferredGenre_load = DatabaseManager.getInstance().getUserCategory(userID);
+
+			String preferredGenre_load = users.get(i).getPreferredGenre();
+
 			String preferredGenre = preferredGenre_load.substring(0, 1).toUpperCase()
 					+ preferredGenre_load.substring(1);
 			List<Review> reviews = DatabaseManager.getInstance().getUserReviews(userID);
@@ -90,12 +102,19 @@ public class ContextualAdvertisingSystem {
 
 			html = html + "</td> <td> ";
 
-			if (preferredGenre.equals("Action"))
-				html = html + "Action Packers!";
-			else if (preferredGenre.equals("Comedy"))
-				html = html + "Funny People...";
-			else if (preferredGenre.equals("Horror"))
-				html = html + "Horror Story";
+			List<Community> communities = CommunityAnalyzer.getCommunities();
+
+			for (Community community : communities) {
+				List<User> members = community.getMembers();
+				for (User member : members) {
+					if (member.getUserId().equals(userID) && community.getCommunityName() == "Community 1")
+						html = html + "Action Packers!";
+					else if (member.getUserId().equals(userID) && community.getCommunityName() == "Community 2")
+						html = html + "Funny People...";
+					else if (member.getUserId().equals(userID) && community.getCommunityName() == "Community 3")
+						html = html + "Horror Story";
+				}
+			}
 		}
 
 		// Put it all together
@@ -129,27 +148,23 @@ public class ContextualAdvertisingSystem {
 			html = "<h1 style=\"padding: 15px;\" align=\"center\">Community</h1><table style= \"width:100%\"> <tr> <th>Community</th> <th>Community Members</th></tr>";
 			String ending = " </td>  </tr> </table></body></html>";
 
-			List<User> users = DatabaseManager.getInstance().getUsers();
+			List<Community> communities = CommunityAnalyzer.getCommunities();
 
 			// Now add each user profile to the table via the html string
 			String actionCommunity = "";
 			String comedyCommunity = "";
 			String horrorCommunity = "";
 
-			// for (int i = 0; i < users.size(); i++) {
-			for (int i = 0; i < 10; i++) {
-				String userID = users.get(i).getUserId();
-				String preferredGenre_load = DatabaseManager.getInstance().getUserCategory(userID);
-				String preferredGenre = preferredGenre_load.substring(0, 1).toUpperCase()
-						+ preferredGenre_load.substring(1);
-
-				if (preferredGenre.equals("Action"))
-					actionCommunity = actionCommunity + userID + ", ";
-				else if (preferredGenre.equals("Comedy"))
-					comedyCommunity = comedyCommunity + userID + ", ";
-				else if (preferredGenre.equals("Horror"))
-					horrorCommunity = horrorCommunity + userID + ", ";
-
+			for (Community community : communities) {
+				List<User> members = community.getMembers();
+				for (User member : members) {
+					if (community.getCommunityName() == "Community 1")
+						actionCommunity = actionCommunity + member.getUserId() + ", ";
+					else if (community.getCommunityName() == "Community 2")
+						comedyCommunity = comedyCommunity + member.getUserId() + ", ";
+					else if (community.getCommunityName() == "Community 3")
+						horrorCommunity = horrorCommunity + member.getUserId() + ", ";
+				}
 			}
 
 			html = html + "<tr><td>" + "Action Packers!" + "</td><td>" + actionCommunity + "</td></tr>";
@@ -165,7 +180,8 @@ public class ContextualAdvertisingSystem {
 	@Path("fetch/{user}/{page}")
 	@GET
 	@Produces(MediaType.TEXT_HTML)
-	public String fetchUserPageProcessor(@PathParam("user") String user, @PathParam("page") String page) {
+	public String fetchUserPageProcessor(@PathParam("user") String user, @PathParam("page") String page)
+			throws Exception {
 
 		String title = "<head><title>" + "CAS - Fetch" + "</title>";
 		String bodyOpen = "<body style=\"background-color:lightyellow;\">";
@@ -182,125 +198,126 @@ public class ContextualAdvertisingSystem {
 			html = "Archive utility sequence incorrect - ensure archive is loaded & context is run first. Refer to readme.txt & try again.";
 		} else {
 
-			html = "<h1 style=\"padding: 15px;\" align=\"center\">Fetch</h1><table style= \"width:100%\"><tr> <th> User: "
+			html = "<h1 style=\"padding: 15px;\" align=\"center\">Fetch</h1> <table style= \"width:100%\"><tr> <th colspan=\"2\"> User: "
 					+ user + " - Page: " + page + "</th></tr>";
-			String ending = " </td>  </tr> </table></body></html>";
 
-			/**
-			 * //Now add each user profile to the table via the html string
-			 * ArrayList<UserProfile> users = LoadUserService.getInstance().getUsers();
-			 * String prefGen = ""; for(int i = 0; i < users.size(); i++){
-			 * 
-			 * if(users.get(i).getUserId().toString().equals(user)) { prefGen =
-			 * users.get(i).getPreferredGenre().toString(); Random rand = new Random(); int
-			 * ad = rand.nextInt(3)+1;
-			 * 
-			 * if(prefGen.equals("Action")) { html = html + "
-			 * <tr>
-			 * <td>"+ "<img
-			 * src=\"https://raw.githubusercontent.com/TedKachulis/RecommenderSystemImgPlaceholders/master/adverts/actionAd"
-			 * + ad + ".jpg\" alt=\"Action 1 Ad\">" + "</td>
-			 * </tr>
-			 * ";
-			 * 
-			 * if(ad==1) { html = html + "
-			 * <tr>
-			 * <td>"+ " <a
-			 * href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
-			 * + "6303212263" + ".html\"> Click to check out the reviews (for the
-			 * recommended movie)! </a>" + "</td>
-			 * </tr>
-			 * "; } else if(ad==2) { html = html + "
-			 * <tr>
-			 * <td>"+ " <a
-			 * href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
-			 * + "0784010331" + ".html\"> Click to check out the reviews (for the
-			 * recommended movie)! </a>" + "</td>
-			 * </tr>
-			 * "; } else if(ad==3) { html = html + "
-			 * <tr>
-			 * <td>"+ " <a
-			 * href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
-			 * + "0783226128" + ".html\"> Click to check out the reviews (for the
-			 * recommended movie)! </a>" + "</td>
-			 * </tr>
-			 * "; }
-			 * 
-			 * } else if(prefGen.equals("Horror")) { html = html + "
-			 * <tr>
-			 * <td>"+ "<img
-			 * src=\"https://raw.githubusercontent.com/TedKachulis/RecommenderSystemImgPlaceholders/master/adverts/horrorAd"
-			 * + ad + ".jpg\" alt=\"Horror 1 Ad\">" + "</td>
-			 * </tr>
-			 * ";
-			 * 
-			 * if(ad==1) { html = html + "
-			 * <tr>
-			 * <td>"+ " <a
-			 * href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
-			 * + "6304240554" + ".html\"> Click to check out the reviews (for the
-			 * recommended movie)! </a>" + "</td>
-			 * </tr>
-			 * "; } else if(ad==2) { html = html + "
-			 * <tr>
-			 * <td>"+ " <a
-			 * href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
-			 * + "B00004CJ2O" + ".html\"> Click to check out the reviews (for the
-			 * recommended movie)! </a>" + "</td>
-			 * </tr>
-			 * "; } else if(ad==3) { html = html + "
-			 * <tr>
-			 * <td>"+ " <a
-			 * href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
-			 * + "B003EYVXUU" + ".html\"> Click to check out the reviews (for the
-			 * recommended movie)! </a>" + "</td>
-			 * </tr>
-			 * "; } } else if(prefGen.equals("Comedy")) { html = html + "
-			 * <tr>
-			 * <td>"+ "<img
-			 * src=\"https://raw.githubusercontent.com/TedKachulis/RecommenderSystemImgPlaceholders/master/adverts/comedyAd"
-			 * + ad + ".jpg\" alt=\"Comedy 1 Ad\">" + "</td>
-			 * </tr>
-			 * ";
-			 * 
-			 * if(ad==1) { html = html + "
-			 * <tr>
-			 * <td>"+ " <a
-			 * href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
-			 * + "B001KEHAI0" + ".html\"> Click to check out the reviews (for the
-			 * recommended movie)! </a>" + "</td>
-			 * </tr>
-			 * "; } else if(ad==2) { html = html + "
-			 * <tr>
-			 * <td>"+ " <a
-			 * href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
-			 * + "B00004RM0J" + ".html\"> Click to check out the reviews (for the
-			 * recommended movie)! </a>" + "</td>
-			 * </tr>
-			 * "; } else if(ad==3) { html = html + "
-			 * <tr>
-			 * <td>"+ " <a
-			 * href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
-			 * + "B00004CX8I" + ".html\"> Click to check out the reviews (for the
-			 * recommended movie)! </a>" + "</td>
-			 * </tr>
-			 * "; } } } }
-			 * 
-			 * ArrayList<MoviePage> movies = LoadMovieService.getInstance().getMovies();
-			 * String genre = "", score = "", reviewString = ""; //Sort for movie we want
-			 * for(int i = 0; i < movies.size(); i++){
-			 * 
-			 * //Find it if(movies.get(i).getMovieId().toString().equals(page)) {
-			 * 
-			 * //Get data about movie genre = movies.get(i).getGenre().toString(); score =
-			 * movies.get(i).getScore().toString(); reviewString =
-			 * movies.get(i).getReviews();
-			 * 
-			 * } }
-			 **/
-			html = html + "<tr><td>" + " Movie: " + "page" + " <br /> Average Rating: " + "score" + " <br /> Genre: "
-					+ "genre" + " <br /> Reviews: " + "reviewString";
+			// Now add each user profile to the table via the html string
+			List<User> users = DatabaseManager.getInstance().getUsers();
+			List<Review> movies = DatabaseManager.getInstance().getReviews();
+			List<Page> pages = DatabaseManager.getInstance().getPages();
 
+			String genre_load = "", genre = "", reviewString = ""; // Sort for movie we want
+			float score = 0;
+
+			for (int j = 0; j < movies.size(); j++) {
+
+				// Find it
+				if (movies.get(j).getPageId().equals(page) && movies.get(j).getUserId().equals(user)) {
+
+					for (Page p : pages) {
+						if (p.getPageId().equals(page)) {
+							genre_load = p.getCategory();
+							genre = genre_load.substring(0, 1).toUpperCase() + genre_load.substring(1);
+						}
+					}
+
+					// Get data about movie
+					score = movies.get(j).getScore();
+					reviewString = movies.get(j).getContent();
+				}
+			}
+
+			html = html + "<tr><td rowspan=\"2\">" + " <b>Movie: </b>" + page + " <br /><b>Average Rating: </b>" + score
+					+ " <br /><b> Genre: </b>" + genre + " <br /><b>Reviews: </b>" + reviewString
+					+ "</td><td style=\"color:white; text-align:center;\" bgcolor=\"#BEBEBE\"><b>Advertising</b></td></tr>";
+
+			// Advertising
+			String prefGen = "";
+			for (int i = 0; i < users.size(); i++) {
+
+				if (users.get(i).getUserId().toString().equals(user)) {
+					prefGen = users.get(i).getPreferredGenre();
+					Random rand = new Random();
+					int ad = rand.nextInt(3) + 1;
+
+					if (prefGen.equals("action")) {
+						html = html + "<tr><td>"
+								+ "<p><img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/actionAd"
+								+ ad + ".png\" alt=\"Action 1 Ad\"/></p>";
+
+						if (ad == 1) {
+							html = html + "<p align=\"center\">"
+									+ " <a href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
+									+ "0783226128"
+									+ ".html\"> Click to check out the reviews (for the recommended movie)! </a>"
+									+ "</p></td>";
+						} else if (ad == 2) {
+							html = html + "<p align=\"center\">"
+									+ " <a href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
+									+ "0784010331"
+									+ ".html\"> Click to check out the reviews (for the recommended movie)! </a>"
+									+ "</p></td>";
+						} else if (ad == 3) {
+							html = html + "<p align=\"center\">"
+									+ " <a href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
+									+ "6303212263"
+									+ ".html\"> Click to check out the reviews (for the recommended movie)! </a>"
+									+ "</p></td>";
+						}
+
+					} else if (prefGen.equals("horror")) {
+						html = html + "<tr><td>"
+								+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/horrorAd"
+								+ ad + ".png\" alt=\"Horror 1 Ad\"/>";
+
+						if (ad == 1) {
+							html = html + "<p align=\"center\">"
+									+ " <a href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
+									+ "6304240554"
+									+ ".html\"> Click to check out the reviews (for the recommended movie)! </a>"
+									+ "</p></td>";
+						} else if (ad == 2) {
+							html = html + "<p align=\"center\">"
+									+ " <a href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
+									+ "B00004CJ2O"
+									+ ".html\"> Click to check out the reviews (for the recommended movie)! </a>"
+									+ "</p></td>";
+						} else if (ad == 3) {
+							html = html + "<p align=\"center\">"
+									+ " <a href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
+									+ "B003EYVXUU"
+									+ ".html\"> Click to check out the reviews (for the recommended movie)! </a>"
+									+ "</p></td>";
+						}
+					} else if (prefGen.equals("comedy")) {
+						html = html + "<tr><td>"
+								+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/comedyAd"
+								+ ad + ".png\" alt=\"Comedy 1 Ad\"/>";
+
+						if (ad == 1) {
+							html = html + "<p align=\"center\">"
+									+ " <a href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
+									+ "B001KEHAI0"
+									+ ".html\"> Click to check out the reviews (for the recommended movie)! </a>"
+									+ "</p></td>";
+						} else if (ad == 2) {
+							html = html + "<p align=\"center\">"
+									+ " <a href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
+									+ "B00004RM0J"
+									+ ".html\"> Click to check out the reviews (for the recommended movie)! </a>"
+									+ "</p></td>";
+						} else if (ad == 3) {
+							html = html + "<p align=\"center\">"
+									+ " <a href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
+									+ "B00004CX8I"
+									+ ".html\"> Click to check out the reviews (for the recommended movie)! </a>"
+									+ "</p></td>";
+						}
+					}
+				}
+			}
+
+			String ending = " </tr></table></body></html>";
 			html = title + style + bodyOpen + html + ending;
 		}
 		return html;
@@ -326,35 +343,35 @@ public class ContextualAdvertisingSystem {
 		String html = "<h1 style=\"padding: 15px;\" align=\"center\">Advertising</h1><table style= \"width:100%\"><tr> <th> Genre </th> <th>Advertisement Samples</th> </tr>";
 		String ending = "</table></body></html>";
 
-		if (genre.equals("actionclassics")) {
+		if (genre.equals("action")) {
 			html = html + "<tr><td>" + " Action & Classics" + "</td><td>"
-					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/actionAd1.png\" alt=\"Action 1 Ad\">"
-					+ "</td></tr>";
-			html = html + "<tr><td>" + " Action & Classics" + "</td><td>"
-					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/actionAd2.png\" alt=\"Action 2 Ad\">"
+					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/actionAd1.png\" alt=\"Action 1 Ad\"/>"
 					+ "</td></tr>";
 			html = html + "<tr><td>" + " Action & Classics" + "</td><td>"
-					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/actionAd3.png\" alt=\"Action 3 Ad\">"
+					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/actionAd2.png\" alt=\"Action 2 Ad\"/>"
 					+ "</td></tr>";
-		} else if (genre.equals("fearfanatics")) {
+			html = html + "<tr><td>" + " Action & Classics" + "</td><td>"
+					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/actionAd3.png\" alt=\"Action 3 Ad\"/>"
+					+ "</td></tr>";
+		} else if (genre.equals("horror")) {
 			html = html + "<tr><td>" + " Fear Fanatics" + "</td><td>"
-					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/horrorAd1.png\" alt=\"Horror 1 Ad\">"
+					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/horrorAd1.png\" alt=\"Horror 1 Ad\"/>"
 					+ "</td></tr>";
 			html = html + "<tr><td>" + " Fear Fanatics" + "</td><td>"
-					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/horrorAd2.png\" alt=\"Horror 2 Ad\">"
+					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/horrorAd2.png\" alt=\"Horror 2 Ad\"/>"
 					+ "</td></tr>";
 			html = html + "<tr><td>" + " Fear Fanatics" + "</td><td>"
-					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/horrorAd3.png\" alt=\"Horror 3 Ad\">"
+					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/horrorAd3.png\" alt=\"Horror 3 Ad\"/>"
 					+ "</td></tr>";
-		} else if (genre.equals("laughlovers")) {
+		} else if (genre.equals("comedy")) {
 			html = html + "<tr><td>" + " Laugh Lovers" + "</td><td>"
-					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/comedyAd1.png\" alt=\"Comedy 1 Ad\">"
-					+ "</td></tr>";
-			html = html + "<tr><td>" + " Laugh Lovers" + "</td><td>"
-					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/comedyAd2.png\" alt=\"Comedy 2 Ad\">"
+					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/comedyAd1.png\" alt=\"Comedy 1 Ad\"/>"
 					+ "</td></tr>";
 			html = html + "<tr><td>" + " Laugh Lovers" + "</td><td>"
-					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/comedyAd2.png\" alt=\"Comedy 3 Ad\">"
+					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/comedyAd2.png\" alt=\"Comedy 2 Ad\"/>"
+					+ "</td></tr>";
+			html = html + "<tr><td>" + " Laugh Lovers" + "</td><td>"
+					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/comedyAd2.png\" alt=\"Comedy 3 Ad\"/>"
 					+ "</td></tr>";
 		}
 
