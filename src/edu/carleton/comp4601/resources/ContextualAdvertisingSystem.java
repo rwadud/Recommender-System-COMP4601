@@ -1,7 +1,9 @@
 package edu.carleton.comp4601.resources;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import javax.ws.rs.GET;
@@ -26,6 +28,7 @@ public class ContextualAdvertisingSystem {
 	private static final String PARTNERS = "Alexander Nguyen & Redwan Wadud";
 	private static boolean contextHit = false;
 	private static boolean analyzer = false;
+	private static Map<String,String> reviewMap;
 	private static List<Community> communities = null;
 
 	// Display name as test that endpoints are working
@@ -84,6 +87,7 @@ public class ContextualAdvertisingSystem {
 		if (analyzer == false) {
 			CommunityAnalyzer.analyze(users);
 			PreferenceAnalyzer.analyze(users);
+			reviewMap = new HashMap<String, String>();
 			analyzer = true;
 		}
 
@@ -99,10 +103,17 @@ public class ContextualAdvertisingSystem {
 				
 				html = html + "<tr><td>" + userID + "</td><td>" + preferredGenre + "</td><td>";
 				
-				List<Review> reviews = member.getReviews();
-				for (Review review : reviews)
-					html = html + review.getPageId() + "(" + review.getScore()+","+ review.getSentiment() + ")" + ", ";
-				
+				if(reviewMap.containsKey(userID)) {
+					html+= reviewMap.get(userID);
+				} else {
+					List<Review> reviews = member.getReviews();
+					String reviewString = "";
+					for (Review review : reviews)
+						reviewString+=review.getPageId() + "(" + review.getScore()+","+ review.getSentiment() + ")" + ", ";
+					html+=reviewString;
+					reviewMap.put(userID, reviewString);
+				}
+
 				html = html + "</td> <td> ";
 				
 				html+=community.getCommunityName();

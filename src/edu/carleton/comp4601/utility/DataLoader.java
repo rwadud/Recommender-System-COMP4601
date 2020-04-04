@@ -25,7 +25,6 @@ import edu.carleton.comp4601.analyzers.SentimentAnalyzer;
 import edu.carleton.comp4601.database.DatabaseManager;
 import edu.carleton.comp4601.model.Page;
 import edu.carleton.comp4601.model.Review;
-import edu.carleton.comp4601.model.Reviews;
 import edu.carleton.comp4601.model.Sentiment;
 import edu.carleton.comp4601.model.User;
 import edu.carleton.comp4601.resources.CorpusParser;

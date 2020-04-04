@@ -49,6 +49,7 @@ public class Utils {
 		
 		URL url = new URL(FILE_URL);
 		String file = FilenameUtils.getName(url.getPath());
+		System.out.println("Downloading " + file);
 		
 		String output = Paths.get(TEMP_DIR, file).toString();
 		
