@@ -44,12 +44,9 @@ public class Utils {
 	}
 	
 	public static void downloadFile(String FILE_URL) throws Exception {
-		
-		System.out.println("Downloading " + FILE_URL);
-		
 		URL url = new URL(FILE_URL);
 		String file = FilenameUtils.getName(url.getPath());
-		System.out.println("Downloading " + file);
+		System.out.println("Downloading " + FILE_URL);
 		
 		String output = Paths.get(TEMP_DIR, file).toString();
 		
@@ -62,12 +59,14 @@ public class Utils {
 				    }
 				} catch (IOException e) {
 				    e.printStackTrace();
+				    throw new Exception("file not found");
 				}
-		System.out.println("Done downloading  "+ FILE_URL);
+		System.out.println("Done downloading  "+ file);
+		/*
 		if(file.endsWith(".zip")) {
 			System.out.println("Extracting "+ file);
 			new ZipFile(output).extractAll(TEMP_DIR);
 			System.out.println("Done extracting "+ file);
-		}
+		}*/
 	}
 }

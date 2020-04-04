@@ -67,7 +67,7 @@ public class DatabaseManager {
 		Document index1 = new Document("userid", 1);
 		Document index2 = new Document("pageid", 1);
 		Document index3 = new Document("userid", 1);
-		Document index4 = new Document("value", 1);
+		Document index4 = new Document("option", 1);
 		index3.append("pageid", 1);
 
 		users.createIndex(index1, new IndexOptions().unique(true));
@@ -87,14 +87,15 @@ public class DatabaseManager {
 		
 		String dir;
 		Document doc = settings.find(new Document("option","temp_dir")).first();
-		
+
 		if(doc !=null ) {
 			dir = doc.getString("value");
 		} else {
 			dir = Utils.newTempDir();
-			settings.insertOne(new Document("option","temp_dir").append("value", dir));
+			try {
+				settings.insertOne(new Document("option","temp_dir").append("value", dir));
+			} catch (Exception e) {}
 		}
-		
 		return dir;
 	}
 	

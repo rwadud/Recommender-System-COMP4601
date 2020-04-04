@@ -50,7 +50,7 @@ public class PreferenceAnalyzer {
 			}	
 			//genrePreferences.values().remove(0);
 			user.setGenrePreferences(genrePreferences);
-			//System.out.println(genrePreferences);
+			System.out.println(user.getUserId() + " prefers " + user.getPreferredGenre());
 			preferredGenreMap.put(user.getUserId(), user.getPreferredGenre());
 			db.updateUser(user);
 

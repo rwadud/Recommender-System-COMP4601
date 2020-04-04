@@ -1,44 +1,39 @@
 package edu.carleton.comp4601.utility;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Scanner;
-import java.util.concurrent.ThreadLocalRandom;
 
 import edu.carleton.comp4601.database.DatabaseManager;
-import edu.carleton.comp4601.model.User;
-
 
 public class Kmeans {
 
 	private int no_users;
-	private KUser[] users;
+	private User[] users;
 	private int no_features;
 	private boolean changed;
 	private int no_clusters;
-	private KUser[] centroids;
+	private User[] centroids;
 
 	/*
 	 * Constructor that reads the data in from a file. You must specify the number
 	 * of clusters.
 	 */
-	public Kmeans(int noClusters, List<User> ulist) throws FileNotFoundException {
+	public Kmeans(int noClusters, List<edu.carleton.comp4601.model.User> ulist) throws FileNotFoundException {
 		changed = true;
 
 		no_users = ulist.size();
 		no_features = 3;
-		users = new KUser[no_users];
+		users = new User[no_users];
 		this.no_clusters = noClusters;
-		centroids = new KUser[noClusters];
+		centroids = new User[noClusters];
 
 		for (int i = 0; i < no_users; i++) {
-			User user = ulist.get(i);
+			edu.carleton.comp4601.model.User user = ulist.get(i);
 			String name = user.getUserId();
-			users[i] = new KUser(name, no_features, noClusters);
+			users[i] = new User(name, no_features, noClusters);
 			users[i].features = user.getFeatures();
 		}
 
@@ -52,8 +47,8 @@ public class Kmeans {
 		for (int i = 0; i < centroids.length; i++) {
 			Random ran = new Random(System.nanoTime()); 
 			int randomNum = ran.nextInt(users.length); 
-			KUser u = users[i];
-			centroids[i] = (KUser) u.clone();
+			User u = users[i];
+			centroids[i] = (User) u.clone();
 			System.out.println(centroids[i]);
 		}
 	}
@@ -66,7 +61,7 @@ public class Kmeans {
 		return sum;
 	}
 	
-	public static Double sse(KUser[] users) {
+	public static Double sse(User[] users) {
 	    double sum = 0;
 	    /*
 	    for (int i = 0; i < centroids.length; i++) {
@@ -90,7 +85,7 @@ public class Kmeans {
 	/*
 	 * This is where your implementation goes
 	 */
-	private KUser[] algorithm() {
+	private User[] algorithm() {
 		int iteration = 1;
 		while (changed) {
 			System.out.println("Iteration "+ iteration++);
@@ -155,7 +150,7 @@ public class Kmeans {
 	/*
 	 * Computes distance between two users Could implement this on User too.
 	 */
-	private double distance(KUser a, KUser b) {
+	private double distance(User a, User b) {
 		double rtn = 0.0;
 		// Assumes a and b have same number of features
 		for (int i = 0; i < a.features.length; i++) {
@@ -164,15 +159,15 @@ public class Kmeans {
 		return Math.sqrt(rtn);
 	}
 
-	public static Map<String, Integer> getUserClusters(List<User> users){
+	public static Map<String, Integer> getUserClusters(List<edu.carleton.comp4601.model.User> ulist){
 		Map<String, Integer> userClusterMap = new HashMap<String, Integer>();
 		try {
 			int numberOfClusters = 3;
-			Kmeans knn = new Kmeans(numberOfClusters, users);
-			KUser[] kUsers = knn.algorithm();
+			Kmeans knn = new Kmeans(numberOfClusters, ulist);
+			User[] users = knn.algorithm();
 			
-			for (KUser kUser : kUsers) {
-				userClusterMap.put(kUser.name, kUser.cluster);
+			for (User user : users) {
+				userClusterMap.put(user.name, user.cluster);
 			}
 			
 		} catch (Exception e) {
@@ -191,14 +186,14 @@ public class Kmeans {
 	}
 
 	// Private class for representing user
-	private class KUser implements Cloneable {
+	private class User implements Cloneable {
 		public Double[] features;
 		public Double[] distance;
 		public String name;
 		public int cluster;
 		public int last_cluster;
 
-		public KUser(String name, int noFeatures, int noClusters) {
+		public User(String name, int noFeatures, int noClusters) {
 			this.name = name;
 			this.features = new Double[noFeatures];
 			this.distance = new Double[noClusters];
@@ -219,9 +214,9 @@ public class Kmeans {
 		@Override
 		public Object clone() {
 		    try {
-		        return (KUser) super.clone();
+		        return (User) super.clone();
 		    } catch (CloneNotSupportedException e) {
-		    	KUser u = new KUser(this.name, this.features.length, this.distance.length);
+		    	User u = new User(this.name, this.features.length, this.distance.length);
 		    	u.features = this.features;
 		    	u.distance = this.distance;
 		    	u.cluster = this.cluster;

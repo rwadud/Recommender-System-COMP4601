@@ -5,21 +5,26 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
-import com.google.common.io.Files;
 
 import edu.carleton.comp4601.analyzers.SentimentAnalyzer;
 import edu.carleton.comp4601.database.DatabaseManager;
@@ -33,65 +38,64 @@ import javafx.scene.chart.PieChart.Data;
 public class DataLoader {
 	
 	private static final String resourceDir = Utils.TEMP_DIR;
-	private static final String userDir = resourceDir + "/users";
-	private static final String reviewDir = resourceDir + "/reviews";
-	private static final String pageDir = resourceDir + "/pages";
+	private static final String userArchive = resourceDir + "/users.zip";
+	public static final String reviewArchive = resourceDir + "/reviews.zip";
+	private static final String pageArchive = resourceDir + "/pages.zip";
 	private static Map<String, Map<String, Integer>> sentimentValues = null;
 	private static final String COMMA_DELIMITER = ",";
 	private static DatabaseManager db = DatabaseManager.getInstance();
-	private static boolean fetchedFromSikaman = false;
-	
+
 	public static void loadUserData() throws IOException {
 		System.out.println("Loading users");
 		
-		File dir = new File(userDir);
-		File[] dirList = dir.listFiles();
-		if (dirList != null) {
-			for (File file : dirList) {
-				if (file.getName().contains(".html")) {
+	    ZipFile zipFile = new ZipFile(userArchive);
+	    Enumeration<? extends ZipEntry> entries = zipFile.entries();
 
-					Document doc = Jsoup.parse(file, "UTF-8", "");
-					
-					String userid = doc.title();
-
-		    		User user = new User(userid);
-					
-		    		db.insertUser(user);
-
-				}
-			}
-		}
-		
-		//return map;
+	    while(entries.hasMoreElements()){
+	        ZipEntry entry = entries.nextElement();
+	        InputStream stream = zipFile.getInputStream(entry);
+	        String file = IOUtils.toString(stream, StandardCharsets.UTF_8);
+	        
+	        if(file.contains("<html>")) {
+		        Document doc = Jsoup.parse(file);
+				String userid = doc.title();
+	    		User user = new User(userid);
+	    		try {
+	    			db.insertUser(user);
+				} catch (Exception e) {}
+	        }
+	    }
 	}
-
+	
 	public static void loadPageData() throws IOException {
 
 		System.out.println("Loading pages");
-		File dir = new File(pageDir);
-		File[] dirList = dir.listFiles();
-		if (dirList != null) {
-			for (File file : dirList) {
-				if (file.getName().contains(".html")) {
-					Document doc = Jsoup.parse(file, "UTF-8", "");
-					
-					String pageid = doc.title();
-					Page page = new Page(pageid);
-					
-					try {
-						String genre = db.getPageCategory(pageid);
-						page.setCategory(genre);
-						db.insertPage(page);
-						
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+		
+	    ZipFile zipFile = new ZipFile(pageArchive);
+	    Enumeration<? extends ZipEntry> entries = zipFile.entries();
 
+	    while(entries.hasMoreElements()){
+	        ZipEntry entry = entries.nextElement();
+	        InputStream stream = zipFile.getInputStream(entry);
+	        String file = IOUtils.toString(stream, StandardCharsets.UTF_8);
+	        
+	        if(file.contains("<html>")) {
+		        Document doc = Jsoup.parse(file);
+		        
+				String pageid = doc.title();
+				Page page = new Page(pageid);
+				
+				try {
+					String genre = db.getPageCategory(pageid);
+					page.setCategory(genre);
+					db.insertPage(page);
+					
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
-			}
-		}
-		//return map;
+	        }
+	    }
+
 	}
 	
 	public static void loadReviews() throws IOException {
@@ -100,62 +104,69 @@ public class DataLoader {
 		if(sentimentValues == null)
 			loadSentimentValues();
 		
-		File dir = new File(reviewDir);
-		File[] dirList = dir.listFiles();
-		if (dirList != null) {
-			for (File file : dirList) {
-				if (file.getName().contains(".html")) {
-					Document doc = Jsoup.parse(file, "UTF-8", "");
-					String reviewid = file.getName().replace(".html", "");
-					
-					Review review = loadReview(file);
-					
-					String genre = CorpusParser.getDominantCategory(review);
-					
-					review.setCategory(genre);
-					
-					Map<String, Integer> sentimentScores = sentimentValues.get(review.getId());
-					
-					if(sentimentScores == null)
-						sentimentScores = SentimentAnalyzer.getDefaultValues();
-					
-					review.setSentimentScores(sentimentScores);
-					
+		ZipFile zipFile = new ZipFile(reviewArchive);
+	    Enumeration<? extends ZipEntry> entries = zipFile.entries();
+
+	    while(entries.hasMoreElements()){
+	    	ZipEntry entry = entries.nextElement();
+	        InputStream stream = zipFile.getInputStream(entry);
+	        
+	        String file = IOUtils.toString(stream, StandardCharsets.UTF_8).trim();
+	        
+	        if(file.contains("<html>")) {
+		        Review review = loadReview(file);
+				String genre = CorpusParser.getDominantCategory(review);
+				review.setCategory(genre);
+				
+				Map<String, Integer> sentimentScores = sentimentValues.get(review.getId());
+				if(sentimentScores == null)
+					sentimentScores = SentimentAnalyzer.getDefaultValues();
+				
+				review.setSentimentScores(sentimentScores);
+				try {
 					if(review!=null)
 						db.insertReview(review);
+				} catch (Exception e) {}
+	        }
 
-				}
-			}
-		}
+	    }
 		
 		sentimentValues.clear();
 	}
 	
-	public static void loadSentimentValues() {
+	
+	public static Review loadReview(String file) throws IOException {
+		Review review = null;
+
+		Document doc = Jsoup.parse(file);
+		String pageid = doc.title();
+		String userid = doc.select("meta[name=userId]").get(0).attr("content");
+		String content = doc.body().text();
+		float score = Float.valueOf(doc.select("meta[name=score]").get(0).attr("content"));
+		review = new Review(pageid, userid, content, score);
+
+		return review;
+	}
+
+	public static void loadSentimentValues() throws IOException {
 		if(sentimentValues == null) {
 			System.out.println("Loading sentiment values from csv.");
 			sentimentValues = new HashMap<String, Map<String,Integer>>();
 			try {
-				
-				if(fetchedFromSikaman) {
-					loadSentimentFile("sentiment-reviews-individual.csv");
-					loadSentimentFile("sentiment-reviews-individual2.csv");
-				} else {
-					loadSentimentFile("sentiment-reviews.csv");
-				}
-				
+				loadSentimentFile("./WebContent/resources/sentiment-reviews.csv");
 			} catch (Exception e) {
-				e.printStackTrace();
+				loadSentimentFile(resourceDir + "/" + "sentiment-reviews-individual.csv");
+				loadSentimentFile(resourceDir + "/" + "sentiment-reviews-individual2.csv");
 			}
 		} else {
 			System.out.println("Sentiment values already loaded.");
 		}
-		
 	}
 	
-	private static void loadSentimentFile(String file) throws Exception{
+	private static void loadSentimentFile(String file) throws IOException{
 	
-		file = resourceDir + "/" + file;
+		System.out.println("Attempting to load "+ file);
+		//file = resourceDir + "/" + file;
 		BufferedReader br = new BufferedReader(new FileReader(file));
 	    String line;
 	    
@@ -179,21 +190,6 @@ public class DataLoader {
 		}
 
 	}
-	
-	public static Review loadReview(File file) throws IOException {
-		Review review = null;
-
-		if (file.getName().contains(".html")) {
-			Document doc = Jsoup.parse(file, "UTF-8", "");
-			String pageid = doc.title();
-			String userid = doc.select("meta[name=userId]").get(0).attr("content");
-			String content = doc.body().text();
-			float score = Float.valueOf(doc.select("meta[name=score]").get(0).attr("content"));
-			review = new Review(pageid, userid, content, score);
-		}
-		
-		return review;
-	}
 
 	public static void fetchFromSikaman() throws Exception {
 		if(!resourceExists()) {
@@ -208,38 +204,30 @@ public class DataLoader {
 
 				Utils.downloadFile(link);
 			}
-			fetchedFromSikaman = true;
 			Utils.printTimeElapsed(start);
 		}
 	}
 	
+	/*
 	public static void fetchData() throws Exception {
 		if(!resourceExists()) {
 			long start = System.currentTimeMillis();
 			System.out.println("Begin fetching data");
 			
-			String url = "https://ws8.xsys.tech/archive/resources.zip";
+			String url = "https://ws8.xsys.tech/archive/resourcess.zip";
+			
 			Utils.downloadFile(url);
 			
 			Utils.printTimeElapsed(start);
 		}
-	}
+	}*/
 	
 	private static boolean resourceExists(){
-		
-		try {
-			Stream<Path> reviews = java.nio.file.Files.list(Paths.get(reviewDir));
-			Stream<Path> users = java.nio.file.Files.list(Paths.get(userDir));
-			Stream<Path> pages = java.nio.file.Files.list(Paths.get(pageDir));
-			
-		    if(pages.count() == 1079 && users.count() == 1252 && reviews.count() == 82201) {
-		    	System.out.println("Resources already exist");
-		    	return true;
-		    }
-		    
-		} catch (IOException e) {
 
-		}
+	    if(Files.exists(Paths.get(userArchive)) && Files.exists(Paths.get(pageArchive)) && Files.exists(Paths.get(reviewArchive)) ) {
+	    	System.out.println("Resources already exist");
+	    	return true;
+	    }
 
 	    System.out.println("Resources do not exist");
 		return false;
@@ -249,23 +237,21 @@ public class DataLoader {
 		
 		if(!db.dataExists()) {
 			try {
-				fetchData();
+				fetchFromSikaman();	
 			} catch (Exception e) {
-				try {
-					fetchFromSikaman();	
-				} catch (Exception e1) {
-					e1.printStackTrace();
-				}
+				e.printStackTrace();
+			} finally {
+				long start = System.currentTimeMillis();
+				System.out.println("Begin loading data");
+
+				loadSentimentValues();
+				loadReviews();
+				loadUserData();
+				loadPageData();
+
+				Utils.printTimeElapsed(start);
 			}
-			long start = System.currentTimeMillis();
-			System.out.println("Begin loading data");
 
-			loadSentimentValues();
-			loadReviews();
-			loadUserData();
-			loadPageData();
-
-			Utils.printTimeElapsed(start);
 		} else {
 			System.out.println("Data already exists in db");
 		}

@@ -20,7 +20,7 @@ import edu.carleton.comp4601.model.Page;
 import edu.carleton.comp4601.model.Review;
 import edu.carleton.comp4601.model.User;
 
-//Main root path as per requirements of assignment
+//Root web service path
 @Path("/rs")
 public class ContextualAdvertisingSystem {
 
@@ -30,18 +30,19 @@ public class ContextualAdvertisingSystem {
 	private static boolean analyzer = false;
 	private static Map<String,String> reviewMap;
 	private static List<Community> communities = null;
+	private DatabaseManager db = DatabaseManager.getInstance();
 
-	// Display name as test that endpoints are working
 	@GET
 	public String nameOfSystem() {
 		return PROJNAME;
 	}
 
+	// Root web service
 	@GET
 	@Produces(MediaType.TEXT_HTML)
 	public String sayHtml() {
-		String title = "<title>" + "COMP4601 - CAS" + "</title>";
 
+		String title = "<title>" + "COMP4601 - CAS" + "</title>";
 		String projName = "<h1>" + PROJNAME + "</h1>";
 		String partner = "<h2>" + PARTNERS + "</h2>";
 		String bodyOpen = "<body style=\"background-color:lightyellow;\">";
@@ -57,6 +58,7 @@ public class ContextualAdvertisingSystem {
 		return "<html> " + title + style + bodyOpen + divOpen + projName + partner + divClose + bodyClose + "</html> ";
 	}
 
+	// Context web service
 	@Path("context")
 	@GET
 	@Produces(MediaType.TEXT_HTML)
@@ -73,26 +75,27 @@ public class ContextualAdvertisingSystem {
 		String html = "<h1 style=\"padding: 15px;\" align=\"center\">Context</h1><table style= \"width:100%\"> <tr> <th>UserID</th> <th>Preferred Genre</th> <th>Movies Reviewed + User Score</th> <th>Community</th> </tr>";
 		String ending = " </td>  </tr> </table></body></html>";
 
+		/*
 		try {
 			DatabaseManager.getInstance();
-			System.out.println("User collection loaded from database!");
+			System.out.println("Data loaded sucessfully.");
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println(
-					"Archive utility sequence incorrect - ensure archive is loaded & context is run first. Refer to readme.txt & try again.");
-		}
+			System.out.println("Context web service must be ran first. Refer to readme.txt & try again.");
+		}*/
 
-		List<User> users = DatabaseManager.getInstance().getUsers();
+		List<User> users = db.getUsers();
 
+		// Run analysis calculation once
 		if (analyzer == false) {
 			CommunityAnalyzer.analyze(users);
 			PreferenceAnalyzer.analyze(users);
 			reviewMap = new HashMap<String, String>();
+			communities = CommunityAnalyzer.getCommunities();
 			analyzer = true;
 		}
 
-		communities = CommunityAnalyzer.getCommunities();
-		
+		// Load user profile data
 		for (Community community : communities) {
 			List<User> members = community.getMembers();
 			for (User member : members) {
@@ -100,57 +103,24 @@ public class ContextualAdvertisingSystem {
 				String preferredGenre_load = member.getPreferredGenre();
 				String preferredGenre = preferredGenre_load.substring(0, 1).toUpperCase()
 						+ preferredGenre_load.substring(1);
-				
+
 				html = html + "<tr><td>" + userID + "</td><td>" + preferredGenre + "</td><td>";
-				
+			
 				if(reviewMap.containsKey(userID)) {
 					html+= reviewMap.get(userID);
 				} else {
 					List<Review> reviews = member.getReviews();
 					String reviewString = "";
 					for (Review review : reviews)
-						reviewString+=review.getPageId() + "(" + review.getScore()+","+ review.getSentiment() + ")" + ", ";
+						reviewString+=review.getPageId() + " <b>(" + review.getScore() + ")</b>" + ", ";
 					html+=reviewString;
 					reviewMap.put(userID, reviewString);
 				}
 
 				html = html + "</td> <td> ";
-				
-				html+=community.getCommunityName();
+				html += community.getCommunityName();
 			}
 		}
-		
-		/*
-		for (int i = 0; i < users.size(); i++) {
-			String userID = users.get(i).getUserId();
-
-			String preferredGenre_load = users.get(i).getPreferredGenre();
-
-			String preferredGenre = preferredGenre_load.substring(0, 1).toUpperCase()
-					+ preferredGenre_load.substring(1);
-			List<Review> reviews = DatabaseManager.getInstance().getUserReviews(userID);
-
-			html = html + "<tr><td>" + userID + "</td><td>" + preferredGenre + "</td><td>";
-
-			for (Review review : reviews)
-				html = html + review.getPageId() + "(" + review.getScore() + ")" + ", ";
-
-			html = html + "</td> <td> ";
-
-			List<Community> communities = CommunityAnalyzer.getCommunities();
-
-			for (Community community : communities) {
-				List<User> members = community.getMembers();
-				for (User member : members) {
-					if (member.getUserId().equals(userID) && community.getCommunityName() == "Community 1")
-						html = html + "Action Packers!";
-					else if (member.getUserId().equals(userID) && community.getCommunityName() == "Community 2")
-						html = html + "Funny People...";
-					else if (member.getUserId().equals(userID) && community.getCommunityName() == "Community 3")
-						html = html + "Horror Story";
-				}
-			}
-		}*/
 
 		// Put it all together
 		html = title + style + bodyOpen + html + ending;
@@ -159,6 +129,7 @@ public class ContextualAdvertisingSystem {
 		return html;
 	}
 
+	// Community web service
 	@Path("community")
 	@GET
 	@Produces(MediaType.TEXT_HTML)
@@ -173,21 +144,21 @@ public class ContextualAdvertisingSystem {
 				+ "  padding: 8px;\r\n" + "  text-align: left;\r\n" + "  border: 1px solid #ddd;\r\n" + "}\r\n" + "\r\n"
 				+ "tr:hover {background-color:#f5f5f5;}\r\n" + "</style></head>";
 
-		// Ensure context is run first as per assignment requirement
+		// Check to see that context web service has been ran first as per assignment
+		// requirement
 		String html = "";
 		if (contextHit == false) {
-			html = "Archive utility sequence incorrect - ensure archive is loaded & context is run first. Refer to readme.txt & try again.";
+			html = "Context web service must be ran first. Refer to readme.txt & try again.";
 		} else {
-			// HTML output and table config
-
 			html = "<h1 style=\"padding: 15px;\" align=\"center\">Community</h1><table style= \"width:100%\"> <tr> <th>Community</th> <th>Community Members</th></tr>";
 			String ending = " </td>  </tr> </table></body></html>";
 
-			// Now add each user profile to the table via the html string
+			// To append to table
 			String actionCommunity = "";
 			String comedyCommunity = "";
 			String horrorCommunity = "";
 
+			// Iterating through communities to get members
 			for (Community community : communities) {
 				List<User> members = community.getMembers();
 				for (User member : members) {
@@ -205,11 +176,11 @@ public class ContextualAdvertisingSystem {
 			html = html + "<tr><td>" + "Horror Story" + "</td><td>" + horrorCommunity + "</td></tr>";
 
 			html = title + style + bodyOpen + html + ending;
-
 		}
 		return html;
 	}
 
+	// Fetch web service
 	@Path("fetch/{user}/{page}")
 	@GET
 	@Produces(MediaType.TEXT_HTML)
@@ -225,43 +196,38 @@ public class ContextualAdvertisingSystem {
 				+ "  padding: 8px;\r\n" + "  text-align: left;\r\n" + "  border: 1px solid #ddd;\r\n" + "}\r\n" + "\r\n"
 				+ "tr:hover {background-color:#f5f5f5;}\r\n" + "</style></head>";
 
-		// Ensure context is run first as per assignment requirement
+		// Check to see that context web service has been ran first as per assignment
+		// requirement
 		String html = "";
 		if (contextHit == false) {
-			html = "Archive utility sequence incorrect - ensure archive is loaded & context is run first. Refer to readme.txt & try again.";
+			html = "Context web service must be ran first. Refer to readme.txt & try again.";
 		} else {
-
 			html = "<h1 style=\"padding: 15px;\" align=\"center\">Fetch</h1> <table style= \"width:100%\"><tr> <th colspan=\"2\"> User: "
 					+ user + " - Page: " + page + "</th></tr>";
 
-			// Now add each user profile to the table via the html string
 			List<User> users = DatabaseManager.getInstance().getUsers();
 			List<Review> movies = DatabaseManager.getInstance().getReviews();
 			List<Page> pages = DatabaseManager.getInstance().getPages();
 
-			String genre_load = "", genre = "", reviewString = ""; // Sort for movie we want
+			String genre_load = "", genre = "", reviewString = "";
 			float score = 0;
 
 			for (int j = 0; j < movies.size(); j++) {
-
-				// Find it
+				// Find the review that includes the user and page
 				if (movies.get(j).getPageId().equals(page) && movies.get(j).getUserId().equals(user)) {
-
 					for (Page p : pages) {
 						if (p.getPageId().equals(page)) {
 							genre_load = p.getCategory();
 							genre = genre_load.substring(0, 1).toUpperCase() + genre_load.substring(1);
 						}
 					}
-
-					// Get data about movie
 					score = movies.get(j).getScore();
 					reviewString = movies.get(j).getContent();
 				}
 			}
 
 			html = html + "<tr><td rowspan=\"2\">" + " <b>Movie: </b>" + page + " <br /><b>Average Rating: </b>" + score
-					+ " <br /><b> Genre: </b>" + genre + " <br /><b>Reviews: </b>" + reviewString
+					+ " <br /><b> Genre: </b>" + genre + " <br /><b><br />Reviews:<br /></b>" + reviewString
 					+ "</td><td style=\"color:white; text-align:center;\" bgcolor=\"#BEBEBE\"><b>Advertising</b></td></tr>";
 
 			// Advertising
@@ -271,6 +237,8 @@ public class ContextualAdvertisingSystem {
 				if (users.get(i).getUserId().toString().equals(user)) {
 					prefGen = users.get(i).getPreferredGenre();
 					Random rand = new Random();
+
+					// Get user's preferred genre and provide random ad in the same category
 					int ad = rand.nextInt(3) + 1;
 
 					if (prefGen.equals("action")) {
@@ -282,22 +250,21 @@ public class ContextualAdvertisingSystem {
 							html = html + "<p align=\"center\">"
 									+ " <a href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
 									+ "0783226128"
-									+ ".html\"> Click to check out the reviews (for the recommended movie)! </a>"
+									+ ".html\">Click here to see the review for the recommended movie!</a>"
 									+ "</p></td>";
 						} else if (ad == 2) {
 							html = html + "<p align=\"center\">"
 									+ " <a href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
 									+ "0784010331"
-									+ ".html\"> Click to check out the reviews (for the recommended movie)! </a>"
+									+ ".html\">Click here to see the review for the recommended movie!</a>"
 									+ "</p></td>";
 						} else if (ad == 3) {
 							html = html + "<p align=\"center\">"
 									+ " <a href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
 									+ "6303212263"
-									+ ".html\"> Click to check out the reviews (for the recommended movie)! </a>"
+									+ ".html\">Click here to see the review for the recommended movie!</a>"
 									+ "</p></td>";
 						}
-
 					} else if (prefGen.equals("horror")) {
 						html = html + "<tr><td>"
 								+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/horrorAd"
@@ -307,19 +274,19 @@ public class ContextualAdvertisingSystem {
 							html = html + "<p align=\"center\">"
 									+ " <a href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
 									+ "6304240554"
-									+ ".html\"> Click to check out the reviews (for the recommended movie)! </a>"
+									+ ".html\">Click here to see the review for the recommended movie!</a>"
 									+ "</p></td>";
 						} else if (ad == 2) {
 							html = html + "<p align=\"center\">"
 									+ " <a href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
 									+ "B00004CJ2O"
-									+ ".html\"> Click to check out the reviews (for the recommended movie)! </a>"
+									+ ".html\">Click here to see the review for the recommended movie!</a>"
 									+ "</p></td>";
 						} else if (ad == 3) {
 							html = html + "<p align=\"center\">"
 									+ " <a href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
 									+ "B003EYVXUU"
-									+ ".html\"> Click to check out the reviews (for the recommended movie)! </a>"
+									+ ".html\">Click here to see the review for the recommended movie!</a>"
 									+ "</p></td>";
 						}
 					} else if (prefGen.equals("comedy")) {
@@ -331,19 +298,19 @@ public class ContextualAdvertisingSystem {
 							html = html + "<p align=\"center\">"
 									+ " <a href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
 									+ "B001KEHAI0"
-									+ ".html\"> Click to check out the reviews (for the recommended movie)! </a>"
+									+ ".html\">Click here to see the review for the recommended movie!</a>"
 									+ "</p></td>";
 						} else if (ad == 2) {
 							html = html + "<p align=\"center\">"
 									+ " <a href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
 									+ "B00004RM0J"
-									+ ".html\"> Click to check out the reviews (for the recommended movie)! </a>"
+									+ ".html\">Click here to see the review for the recommended movie!</a>"
 									+ "</p></td>";
 						} else if (ad == 3) {
 							html = html + "<p align=\"center\">"
 									+ " <a href=\"https://sikaman.dyndns.org:8443/WebSite/rest/site/courses/4601/assignments/training/pages/"
 									+ "B00004CX8I"
-									+ ".html\"> Click to check out the reviews (for the recommended movie)! </a>"
+									+ ".html\">Click here to see the review for the recommended movie!</a>"
 									+ "</p></td>";
 						}
 					}
@@ -356,8 +323,7 @@ public class ContextualAdvertisingSystem {
 		return html;
 	}
 
-	// Display advertisements for given genre of user communities, refer to
-	// /readme endpoint for help displaying desired content
+	// Advertising web service
 	@Path("advertising/{genre}")
 	@GET
 	@Produces(MediaType.TEXT_HTML)
@@ -372,10 +338,10 @@ public class ContextualAdvertisingSystem {
 				+ "  padding: 8px;\r\n" + "  text-align: left;\r\n" + "  border: 1px solid #ddd;\r\n" + "}\r\n" + "\r\n"
 				+ "tr:hover {background-color:#f5f5f5;}\r\n" + "</style></head>";
 
-		// HTML output and table config
 		String html = "<h1 style=\"padding: 15px;\" align=\"center\">Advertising</h1><table style= \"width:100%\"><tr> <th> Genre </th> <th>Advertisement Samples</th> </tr>";
 		String ending = "</table></body></html>";
 
+		// Show advertisement for each category
 		if (genre.equals("action")) {
 			html = html + "<tr><td style=\"text-align:center;\">" + "<b>Action</b>" + "</td><td>"
 					+ "<img src=\"https://raw.githubusercontent.com/alex090nguyen/RecommenderSystemImgPlaceholders/master/adverts/actionAd1.png\" alt=\"Action 1 Ad\"/>"
@@ -409,8 +375,6 @@ public class ContextualAdvertisingSystem {
 		}
 
 		html = title + style + bodyOpen + html + ending;
-
 		return html;
 	}
-
 }

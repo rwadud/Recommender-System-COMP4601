@@ -91,15 +91,15 @@ http://localhost:8080/COMP4601-RS/rest/rs/community
  
 "Action Packers!" User, Looking at Horror Movie Page:
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; http://localhost:8080/COMP4601-RS/rest/rs/fetch/A100JCBNALJFAW/B006H90TLI 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; http://localhost:8080/COMP4601-RS/rest/rs/fetch/A2ATWKOFJXRRR1/0780625633
  
-"Horror Story." User, Looking at Action Movie Page:
+"Horror Story." User, Looking at Comedy Movie Page:
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; http://localhost:8080/COMP4601-RS/rest/rs/fetch/A26O0T192IBKY1/B00004CJ20 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; http://localhost:8080/COMP4601-RS/rest/rs/fetch/A1CZICCYP2M5PX/0790742322
  
-"Funny ones..." User, Looking at Comedy Movie Page:
+"Funny ones..." User, Looking at Action Movie Page:
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; http://localhost:8080/COMP4601-RS/rest/rs/fetch/A18CMGIQZ1OAA2/6301978277 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; http://localhost:8080/COMP4601-RS/rest/rs/fetch/A2AVV9LV9UXT6F/B000A896J8
  
 <b>.../advertising/{category}</b>
  
