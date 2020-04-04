@@ -20,6 +20,7 @@ public class PreferenceAnalyzer {
 	
 	private PreferenceAnalyzer() {}
 	
+	// analyze reviews to get the preferred genre of users
 	public static void analyze(List<User> users) {
 		
 		long start = System.currentTimeMillis();
@@ -55,9 +56,7 @@ public class PreferenceAnalyzer {
 			db.updateUser(user);
 
 		}
-		
-		Utils.printTimeElapsed(start);
-		
+		Utils.printTimeElapsed(start);	
 	}
 	
 	/*
