@@ -153,7 +153,7 @@ public class DataLoader {
 			System.out.println("Loading sentiment values from csv.");
 			sentimentValues = new HashMap<String, Map<String,Integer>>();
 			try {
-				loadSentimentFile("./sentiment-reviews.csv");
+				loadSentimentFile("./WebContent/resources/sentiment-reviews.csv");
 			} catch (Exception e) {
 				loadSentimentFile(resourceDir + "/" + "sentiment-reviews-individual.csv");
 				loadSentimentFile(resourceDir + "/" + "sentiment-reviews-individual2.csv");

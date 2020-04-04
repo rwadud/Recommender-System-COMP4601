@@ -1,6 +1,5 @@
 package edu.carleton.comp4601.resources;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,10 +87,10 @@ public class ContextualAdvertisingSystem {
 
 		// Run analysis calculation once
 		if (analyzer == false) {
-			CommunityAnalyzer.analyze(users);
 			PreferenceAnalyzer.analyze(users);
-			reviewMap = new HashMap<String, String>();
+			CommunityAnalyzer.analyze(users);
 			communities = CommunityAnalyzer.getCommunities();
+			reviewMap = new HashMap<String, String>();
 			analyzer = true;
 		}
 
@@ -205,9 +204,9 @@ public class ContextualAdvertisingSystem {
 			html = "<h1 style=\"padding: 15px;\" align=\"center\">Fetch</h1> <table style= \"width:100%\"><tr> <th colspan=\"2\"> User: "
 					+ user + " - Page: " + page + "</th></tr>";
 
-			List<User> users = DatabaseManager.getInstance().getUsers();
-			List<Review> movies = DatabaseManager.getInstance().getReviews();
-			List<Page> pages = DatabaseManager.getInstance().getPages();
+			List<User> users = db.getUsers();
+			List<Review> movies = db.getReviews();
+			List<Page> pages = db.getPages();
 
 			String genre_load = "", genre = "", reviewString = "";
 			float score = 0;

@@ -25,7 +25,7 @@ public class CorpusParser {
 	//public static List<Review> REVIEWS;
 	
 	// The file containing the stop words
-	public static String STOP_FILE = "stop.txt";
+	public static String STOP_FILE = "./WebContent/resources/stop.txt";
 	// The memory-resident array of stop words
 	public static ArrayList<String> STOP_WORDS;
 	// The memory-resident map of the corpus
