@@ -1,9 +1,5 @@
 # COMP4601 - Assignment 2
 
-### Student Name & Numbers
-* Alexander Nguyen (100908039)
-* Redwan Wadud (100873111)
-
 ## Introduction
 The main objective is to have the student analyze a body of documents and, given user access patterns and recommendations, create a simple contextual advertising system.
   
