@@ -1,4 +1,4 @@
-# COMP4601 - Assignment 2
+# Recommender System Project for COMP4601
 
 ## Introduction
 The main objective is to have the student analyze a body of documents and, given user access patterns and recommendations, create a simple contextual advertising system.
